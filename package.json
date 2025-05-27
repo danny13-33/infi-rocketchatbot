@@ -1,0 +1,13 @@
+{
+  "name": "rocket-chat-bot",
+  "version": "1.0.0",
+  "main": "auto_messages.js",
+  "scripts": {
+    "start": "node auto_messages.js"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "dotenv": "^16.3.1",
+    "node-cron": "^4.0.7"
+  }
+}
