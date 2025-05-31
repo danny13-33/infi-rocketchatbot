@@ -1,4 +1,4 @@
-const RocketChatAutomation = require('./RocketChatAutomation');
+const RocketChatAutomation = require('./rocketChatAutomation');
 
 const automation = new RocketChatAutomation(
     process.env.ROCKET_CHAT_SERVER_URL,
@@ -8,4 +8,3 @@ const automation = new RocketChatAutomation(
 );
 
 automation.startAutomation();
-

@@ -4,10 +4,10 @@ const cron = require('node-cron');
 
 class RocketChatAutomation {
     constructor(serverUrl, username, password, dannyUsername) {
-        this.serverUrl = serverUrl.replace(/\/$/, ''); // Remove trailing slash
+        this.serverUrl = serverUrl.replace(/\/$/, '');
         this.username = username;
         this.password = password;
-        this.dannyUsername = dannyUsername; // Danny's username, not room ID anymore
+        this.dannyUsername = dannyUsername;
         this.authToken = null;
         this.userId = null;
         this.messageIndex = 0;
@@ -236,9 +236,7 @@ class RocketChatAutomation {
             }
         }
 
-        // Dynamically get or create DM room with Danny
         const dannyRoomId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
-
         if (!dannyRoomId) {
             console.warn('⚠️ Could not get or create DM room with Danny');
             return;
@@ -258,14 +256,12 @@ class RocketChatAutomation {
         console.log('🚀 Starting Infinite Delivery OPS Safety Message Automation');
         console.log('📅 Messages will be sent every 30 minutes from 10:00 AM to 7:30 PM');
 
-        // Schedule the job to run every 30 minutes from 10am to 7:30pm
         this.scheduledTask = cron.schedule('0,30 10-19 * * *', async () => {
             await this.sendSafetyMessage();
         }, {
             timezone: 'America/Chicago'
         });
 
-        // Also send the immediate test message to Danny on startup
         this.sendImmediateMessageToDanny();
     }
 
@@ -276,15 +272,5 @@ class RocketChatAutomation {
         }
     }
 }
-
-
-// Usage example (make sure your .env has the needed values):
-// const automation = new RocketChatAutomation(
-//     process.env.ROCKET_CHAT_SERVER_URL,
-//     process.env.ROCKET_CHAT_USERNAME,
-//     process.env.ROCKET_CHAT_PASSWORD,
-//     process.env.DANNY_USERNAME // e.g. 'danny'
-// );
-// automation.startAutomation();
 
 module.exports = RocketChatAutomation;
