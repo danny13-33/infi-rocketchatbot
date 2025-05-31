@@ -3,11 +3,11 @@ const axios = require('axios');
 const cron = require('node-cron');
 
 class RocketChatAutomation {
-    constructor(serverUrl, username, password, dannyRoomId) {
+    constructor(serverUrl, username, password, dannyUsername) {
         this.serverUrl = serverUrl.replace(/\/$/, ''); // Remove trailing slash
         this.username = username;
         this.password = password;
-        this.dannyRoomId = dannyRoomId; // Danny's room ID
+        this.dannyUsername = dannyUsername; // Danny's username, not room ID anymore
         this.authToken = null;
         this.userId = null;
         this.messageIndex = 0;
@@ -208,12 +208,26 @@ class RocketChatAutomation {
         await this.sendMessage(roomId, fullMessage);
     }
 
-    async sendImmediateMessageToDanny() {
-        if (!this.dannyRoomId) {
-            console.warn('⚠️ Danny room ID not configured - skipping immediate message');
-            return;
+    async getOrCreateDirectMessageRoom(username) {
+        try {
+            const response = await axios.post(
+                `${this.serverUrl}/api/v1/im.create`,
+                { username },
+                {
+                    headers: {
+                        'X-Auth-Token': this.authToken,
+                        'X-User-Id': this.userId
+                    }
+                }
+            );
+            return response.data.room._id;
+        } catch (error) {
+            console.error(`❌ Failed to get/create DM room with ${username}:`, error.response?.data?.message || error.message);
+            return null;
         }
+    }
 
+    async sendImmediateMessageToDanny() {
         if (!this.authToken || !this.userId) {
             const authSuccess = await this.authenticate();
             if (!authSuccess) {
@@ -222,10 +236,18 @@ class RocketChatAutomation {
             }
         }
 
+        // Dynamically get or create DM room with Danny
+        const dannyRoomId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
+
+        if (!dannyRoomId) {
+            console.warn('⚠️ Could not get or create DM room with Danny');
+            return;
+        }
+
         const immediateMessage = `✅ Safety Automation Deployed Successfully.\nThis is your immediate test message, Danny.`;
 
         try {
-            await this.sendMessage(this.dannyRoomId, immediateMessage);
+            await this.sendMessage(dannyRoomId, immediateMessage);
             console.log('✅ Immediate message sent to Danny');
         } catch (error) {
             console.error('❌ Failed to send immediate message to Danny:', error.message || error);
@@ -236,69 +258,33 @@ class RocketChatAutomation {
         console.log('🚀 Starting Infinite Delivery OPS Safety Message Automation');
         console.log('📅 Messages will be sent every 30 minutes from 10:00 AM to 7:30 PM');
 
-        this.authenticate().then(async success => {
-            if (success) {
-                console.log('✅ Initial authentication successful');
-
-                // Send immediate message to Danny
-                await this.sendImmediateMessageToDanny();
-
-                // Start the cron schedule to send safety messages every 30 minutes
-                this.scheduledTask = cron.schedule('0,30 * * * *', () => {
-                    this.sendSafetyMessage();
-                });
-
-                console.log('⏰ Scheduler started - messages will be sent at :00 and :30 of each hour');
-            }
+        // Schedule the job to run every 30 minutes from 10am to 7:30pm
+        this.scheduledTask = cron.schedule('0,30 10-19 * * *', async () => {
+            await this.sendSafetyMessage();
+        }, {
+            timezone: 'America/Chicago'
         });
+
+        // Also send the immediate test message to Danny on startup
+        this.sendImmediateMessageToDanny();
     }
 
     stopAutomation() {
         if (this.scheduledTask) {
             this.scheduledTask.stop();
-            console.log('🛑 Automation stopped.');
+            console.log('🛑 Stopped the automation scheduler');
         }
-    }
-
-    async createTodaysRoom(customDescription = null) {
-        const roomName = this.getCurrentRoomName();
-        const existingRoomId = await this.checkRoomExists(roomName);
-        if (existingRoomId) {
-            console.log(`ℹ️ Room "${roomName}" already exists`);
-            return existingRoomId;
-        }
-        return await this.createRoom(roomName, customDescription);
-    }
-
-    async createRoomForDate(date, customDescription = null) {
-        const months = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ];
-        const month = months[date.getMonth()];
-        const day = date.getDate();
-        const year = date.getFullYear();
-        const suffix = this.getOrdinalSuffix(day);
-        const roomName = `${month}-${day}${suffix}-${year}`;
-
-        return await this.createRoom(roomName, customDescription);
-    }
-
-    addSafetyMessage(message) {
-        this.safetyMessages.push(message);
-        console.log(`✅ Added new safety message: "${message}"`);
     }
 }
 
-// Initialize automation from environment
-const automation = new RocketChatAutomation(
-    process.env.ROCKET_CHAT_SERVER_URL,
-    process.env.ROCKET_CHAT_USERNAME,
-    process.env.ROCKET_CHAT_PASSWORD,
-    process.env.DANNY_ROOM_ID // new env var for Danny's room id
-);
 
-automation.startAutomation();
+// Usage example (make sure your .env has the needed values):
+// const automation = new RocketChatAutomation(
+//     process.env.ROCKET_CHAT_SERVER_URL,
+//     process.env.ROCKET_CHAT_USERNAME,
+//     process.env.ROCKET_CHAT_PASSWORD,
+//     process.env.DANNY_USERNAME // e.g. 'danny'
+// );
+// automation.startAutomation();
 
-// Export class for testing or further use
 module.exports = RocketChatAutomation;
