@@ -3,10 +3,11 @@ const axios = require('axios');
 const cron = require('node-cron');
 
 class RocketChatAutomation {
-    constructor(serverUrl, username, password) {
+    constructor(serverUrl, username, password, dannyRoomId) {
         this.serverUrl = serverUrl.replace(/\/$/, ''); // Remove trailing slash
         this.username = username;
         this.password = password;
+        this.dannyRoomId = dannyRoomId; // Danny's room ID
         this.authToken = null;
         this.userId = null;
         this.messageIndex = 0;
@@ -207,14 +208,42 @@ class RocketChatAutomation {
         await this.sendMessage(roomId, fullMessage);
     }
 
+    async sendImmediateMessageToDanny() {
+        if (!this.dannyRoomId) {
+            console.warn('⚠️ Danny room ID not configured - skipping immediate message');
+            return;
+        }
+
+        if (!this.authToken || !this.userId) {
+            const authSuccess = await this.authenticate();
+            if (!authSuccess) {
+                console.error('❌ Failed to authenticate for immediate message to Danny');
+                return;
+            }
+        }
+
+        const immediateMessage = `✅ Safety Automation Deployed Successfully.\nThis is your immediate test message, Danny.`;
+
+        try {
+            await this.sendMessage(this.dannyRoomId, immediateMessage);
+            console.log('✅ Immediate message sent to Danny');
+        } catch (error) {
+            console.error('❌ Failed to send immediate message to Danny:', error.message || error);
+        }
+    }
+
     startAutomation() {
         console.log('🚀 Starting Infinite Delivery OPS Safety Message Automation');
         console.log('📅 Messages will be sent every 30 minutes from 10:00 AM to 7:30 PM');
 
-        this.authenticate().then(success => {
+        this.authenticate().then(async success => {
             if (success) {
                 console.log('✅ Initial authentication successful');
 
+                // Send immediate message to Danny
+                await this.sendImmediateMessageToDanny();
+
+                // Start the cron schedule to send safety messages every 30 minutes
                 this.scheduledTask = cron.schedule('0,30 * * * *', () => {
                     this.sendSafetyMessage();
                 });
@@ -263,13 +292,13 @@ class RocketChatAutomation {
 
 // Initialize automation from environment
 const automation = new RocketChatAutomation(
-    process.env.ROCKETCHAT_URL || 'https://chat.infinitedeliveryops.com',
-    process.env.BOT_USERNAME,
-    process.env.BOT_PASSWORD
+    process.env.ROCKET_CHAT_SERVER_URL,
+    process.env.ROCKET_CHAT_USERNAME,
+    process.env.ROCKET_CHAT_PASSWORD,
+    process.env.DANNY_ROOM_ID // new env var for Danny's room id
 );
 
-if (!process.env.BOT_USERNAME || !process.env.BOT_PASSWORD) {
-    console.error('❌ Missing required environment variables: BOT_USERNAME and/or BOT_PASSWORD');
-} else {
-    automation.startAutomation();
-}
+automation.startAutomation();
+
+// Export class for testing or further use
+module.exports = RocketChatAutomation;
