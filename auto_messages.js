@@ -264,7 +264,7 @@ class RocketChatAutomation {
 
         this.sendImmediateMessageToDanny();
     }
-
+    
     stopAutomation() {
         if (this.scheduledTask) {
             this.scheduledTask.stop();
@@ -273,4 +273,30 @@ class RocketChatAutomation {
     }
 }
 
-module.exports = RocketChatAutomation;
+//////////////////////////////////////
+// Startup code added below:
+
+console.log('🔧 Loading environment variables...');
+console.log({
+  ROCKET_CHAT_SERVER_URL: process.env.ROCKET_CHAT_SERVER_URL,
+  ROCKET_CHAT_USERNAME: process.env.ROCKET_CHAT_USERNAME,
+  ROCKET_CHAT_PASSWORD: process.env.ROCKET_CHAT_PASSWORD ? '****' : undefined,
+  DANNY_USERNAME: process.env.DANNY_USERNAME
+});
+
+(async () => {
+  try {
+    const automation = new RocketChatAutomation(
+      process.env.ROCKET_CHAT_SERVER_URL,
+      process.env.ROCKET_CHAT_USERNAME,
+      process.env.ROCKET_CHAT_PASSWORD,
+      process.env.DANNY_USERNAME
+    );
+
+    console.log('🚀 Starting automation...');
+    automation.startAutomation();
+
+  } catch (err) {
+    console.error('🔥 Failed to start automation:', err);
+  }
+})();
