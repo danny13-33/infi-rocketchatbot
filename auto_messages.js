@@ -1,6 +1,7 @@
 require('dotenv').config();
 const axios = require('axios');
 const cron = require('node-cron');
+const { DateTime } = require('luxon');
 
 class RocketChatAutomation {
     constructor(serverUrl, username, password, dannyUsername) {
@@ -158,14 +159,15 @@ class RocketChatAutomation {
         }
     }
 
+    // Updated business hours check using luxon and America/Chicago timezone
     isBusinessHours() {
-        const now = new Date();
-        const hour = now.getHours();
-        const minute = now.getMinutes();
+        const now = DateTime.now().setZone('America/Chicago');
+        const hour = now.hour;
+        const minute = now.minute;
 
         const currentTime = hour * 60 + minute;
-        const startTime = 10 * 60;
-        const endTime = 19 * 60 + 30;
+        const startTime = 10 * 60;        // 10:00 AM
+        const endTime = 19 * 60 + 30;     // 7:30 PM
 
         return currentTime >= startTime && currentTime <= endTime;
     }
@@ -254,49 +256,49 @@ class RocketChatAutomation {
 
     startAutomation() {
         console.log('🚀 Starting Infinite Delivery OPS Safety Message Automation');
-        console.log('📅 Messages will be sent every 30 minutes from 10:00 AM to 7:30 PM');
+        console.log('📅 Messages will be sent every 30 minutes from 10:00 AM to 7:30 PM America/Chicago timezone');
 
-        this.scheduledTask = cron.schedule('0,30 10-19 * * *', async () => {
-            await this.sendSafetyMessage();
+        this.sendImmediateMessageToDanny();
+
+        this.scheduledTask = cron.schedule('0,30 10-19 * * 1-5', async () => {
+            try {
+                await this.sendSafetyMessage();
+            } catch (error) {
+                console.error('🔥 Error during scheduled safety message:', error.message || error);
+            }
         }, {
             timezone: 'America/Chicago'
         });
-
-        this.sendImmediateMessageToDanny();
     }
-    
+
     stopAutomation() {
         if (this.scheduledTask) {
             this.scheduledTask.stop();
-            console.log('🛑 Stopped the automation scheduler');
+            console.log('⏹️ Stopped automation');
         }
     }
 }
 
-//////////////////////////////////////
-// Startup code added below:
-
 console.log('🔧 Loading environment variables...');
 console.log({
-  ROCKET_CHAT_SERVER_URL: process.env.ROCKET_CHAT_SERVER_URL,
-  ROCKET_CHAT_USERNAME: process.env.ROCKET_CHAT_USERNAME,
-  ROCKET_CHAT_PASSWORD: process.env.ROCKET_CHAT_PASSWORD ? '****' : undefined,
-  DANNY_USERNAME: process.env.DANNY_USERNAME
+    ROCKET_CHAT_SERVER_URL: process.env.ROCKET_CHAT_SERVER_URL,
+    ROCKET_CHAT_USERNAME: process.env.ROCKET_CHAT_USERNAME,
+    ROCKET_CHAT_PASSWORD: process.env.ROCKET_CHAT_PASSWORD ? '****' : undefined,
+    DANNY_USERNAME: process.env.DANNY_USERNAME
 });
 
 (async () => {
-  try {
-    const automation = new RocketChatAutomation(
-      process.env.ROCKET_CHAT_SERVER_URL,
-      process.env.ROCKET_CHAT_USERNAME,
-      process.env.ROCKET_CHAT_PASSWORD,
-      process.env.DANNY_USERNAME
-    );
+    try {
+        const automation = new RocketChatAutomation(
+            process.env.ROCKET_CHAT_SERVER_URL,
+            process.env.ROCKET_CHAT_USERNAME,
+            process.env.ROCKET_CHAT_PASSWORD,
+            process.env.DANNY_USERNAME
+        );
 
-    console.log('🚀 Starting automation...');
-    automation.startAutomation();
+        automation.startAutomation();
 
-  } catch (err) {
-    console.error('🔥 Failed to start automation:', err);
-  }
+    } catch (err) {
+        console.error('🔥 Failed to start automation:', err);
+    }
 })();
