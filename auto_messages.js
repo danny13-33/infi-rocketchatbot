@@ -13,7 +13,11 @@ class RocketChatAutomation {
         this.userId = null;
         this.messageIndex = 0;
         this.scheduledTask = null;
+        this.safetyMessages = this.initializeSafetyMessages();
+    }
 
+    initializeSafetyMessages() {
+        return [
         this.safetyMessages = [
             `:eyes: *Distracted Driving*  
           Keep your eyes on the road, check your mirrors, and glance at your GPS.  
@@ -110,7 +114,8 @@ class RocketChatAutomation {
           If you are merging then look at the side view mirrors and lean forward to get a different perspective.  
           If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`
           ];
-          
+    }
+
     listSafetyMessages() {
         console.log('📝 Current Safety Messages:');
         this.safetyMessages.forEach((msg, index) => {
@@ -159,226 +164,63 @@ class RocketChatAutomation {
         }
     }
 
-    async checkRoomExists(roomName) {
+    async findRoomIdByName(roomName) {
         try {
-            const getRoomResponse = await axios.get(
-                `${this.serverUrl}/api/v1/rooms.info?roomName=${encodeURIComponent(roomName)}`,
-                {
-                    headers: {
-                        'X-Auth-Token': this.authToken,
-                        'X-User-Id': this.userId
-                    }
+            const response = await axios.get(`${this.serverUrl}/api/v1/rooms.get`, {
+                headers: {
+                    'X-Auth-Token': this.authToken,
+                    'X-User-Id': this.userId
                 }
-            );
+            });
 
-            console.log(`✅ Found existing room: "${roomName}"`);
-            return getRoomResponse.data.room._id;
+            const room = response.data.update.find(room => room.name === roomName);
+            return room?._id || null;
         } catch (error) {
-            if (error.response?.status === 400) {
-                console.log(`⚠️ Room "${roomName}" does not exist yet - waiting for manual creation`);
-                return null;
-            } else {
-                console.error('❌ Error checking room existence:', error.response?.data?.message || error.message);
-                return null;
-            }
-        }
-    }
-
-    async createRoom(roomName, description = null) {
-        try {
-            const createRoomResponse = await axios.post(
-                `${this.serverUrl}/api/v1/channels.create`,
-                {
-                    name: roomName,
-                    description: description || `Daily operations room for ${roomName.replace(/-/g, ' ')}`,
-                    readOnly: false
-                },
-                {
-                    headers: {
-                        'X-Auth-Token': this.authToken,
-                        'X-User-Id': this.userId
-                    }
-                }
-            );
-
-            console.log(`✅ Created new room: "${roomName}"`);
-            return createRoomResponse.data.channel._id;
-        } catch (createError) {
-            console.error('❌ Failed to create room:', createError.response?.data?.message || createError.message);
+            console.error('❌ Failed to fetch room ID:', error.message);
             return null;
         }
     }
 
-    getNextSafetyMessage() {
-        const randomIndex = Math.floor(Math.random() * this.safetyMessages.length);
-        return this.safetyMessages[randomIndex];
-    }
-    
-
-    async sendMessage(roomId, message) {
+    async sendMessageToRoom(roomId, message) {
         try {
-            await axios.post(
-                `${this.serverUrl}/api/v1/chat.postMessage`,
-                {
-                    roomId: roomId,
-                    text: message
-                },
-                {
-                    headers: {
-                        'X-Auth-Token': this.authToken,
-                        'X-User-Id': this.userId
-                    }
+            const response = await axios.post(`${this.serverUrl}/api/v1/chat.postMessage`, {
+                roomId,
+                text: message
+            }, {
+                headers: {
+                    'X-Auth-Token': this.authToken,
+                    'X-User-Id': this.userId
                 }
-            );
-
-            console.log(`📤 Message sent: "${message.substring(0, 50)}..."`);
-            return true;
+            });
+            console.log(`✅ Message sent to room ${roomId}`);
         } catch (error) {
             console.error('❌ Failed to send message:', error.response?.data?.message || error.message);
-            return false;
         }
     }
 
-    isBusinessHours() {
-        const now = DateTime.now().setZone('America/Chicago');
-        const hour = now.hour;
-        const minute = now.minute;
-
-        const currentTime = hour * 60 + minute;
-        const startTime = 10 * 60;
-        const endTime = 19 * 60 + 30;
-
-        return currentTime >= startTime && currentTime <= endTime;
-    }
-
-    isRoomForToday(roomName) {
-        return roomName === this.getCurrentRoomName();
-    }
-
-    async sendSafetyMessage() {
-        if (!this.isBusinessHours()) {
-            console.log('⏰ Outside business hours, skipping message');
-            return;
-        }
-
-        if (!this.authToken || !this.userId) {
-            const authSuccess = await this.authenticate();
-            if (!authSuccess) {
-                console.error('❌ Failed to authenticate, skipping this cycle');
-                return;
-            }
-        }
-
-        const roomName = this.getCurrentRoomName();
-        const roomId = await this.checkRoomExists(roomName);
-
-        if (!roomId) {
-            console.log(`⏳ Room "${roomName}" not created yet - messages will start once the room is created`);
-            return;
-        }
-
-        if (!this.isRoomForToday(roomName)) {
-            console.log(`📅 Room "${roomName}" exists but it's not for today - skipping`);
-            return;
-        }
-
-        const message = this.getNextSafetyMessage();
-        const currentTime = new Date().toLocaleTimeString();
-        const fullMessage = `${message}\n\n*Automated Safety Reminder - ${currentTime}*`;
-
-        await this.sendMessage(roomId, fullMessage);
-    }
-
-    async getOrCreateDirectMessageRoom(username) {
-        try {
-            const response = await axios.post(
-                `${this.serverUrl}/api/v1/im.create`,
-                { username },
-                {
-                    headers: {
-                        'X-Auth-Token': this.authToken,
-                        'X-User-Id': this.userId
-                    }
-                }
-            );
-            return response.data.room._id;
-        } catch (error) {
-            console.error(`❌ Failed to get/create DM room with ${username}:`, error.response?.data?.message || error.message);
-            return null;
-        }
-    }
-
-    async sendImmediateMessageToDanny() {
-        if (!this.authToken || !this.userId) {
-            const authSuccess = await this.authenticate();
-            if (!authSuccess) {
-                console.error('❌ Failed to authenticate for immediate message to Danny');
-                return;
-            }
-        }
-
-        const dannyRoomId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
-        if (!dannyRoomId) {
-            console.warn('⚠️ Could not get or create DM room with Danny');
-            return;
-        }
-
-        const immediateMessage = `✅ Safety Automation Deployed Successfully.\nThis is your immediate test message, Danny.`;
-
-        try {
-            await this.sendMessage(dannyRoomId, immediateMessage);
-            console.log('✅ Immediate message sent to Danny');
-        } catch (error) {
-            console.error('❌ Failed to send immediate message to Danny:', error.message || error);
-        }
-    }
-
-    startAutomation() {
-        console.log('🚀 Starting Infinite Delivery OPS Safety Message Automation');
-        console.log('📅 Messages will be sent every 30 minutes from 10:00 AM to 7:30 PM America/Chicago timezone');
-
-        this.sendImmediateMessageToDanny();
-
-        this.scheduledTask = cron.schedule('0,30 10-19 * * 1-5', async () => {
-            try {
-                await this.sendSafetyMessage();
-            } catch (error) {
-                console.error('🔥 Error during scheduled safety message:', error.message || error);
-            }
-        }, {
-            timezone: 'America/Chicago'
-        });
-    }
-
-    stopAutomation() {
+    startDailyMessages(schedule = '0 9 * * *') {
         if (this.scheduledTask) {
             this.scheduledTask.stop();
-            console.log('⏹️ Stopped automation');
         }
+
+        this.scheduledTask = cron.schedule(schedule, async () => {
+            const authenticated = await this.authenticate();
+            if (!authenticated) return;
+
+            const roomName = this.getCurrentRoomName();
+            const roomId = await this.findRoomIdByName(roomName);
+            if (!roomId) {
+                console.error('❌ Could not find room to send message.');
+                return;
+            }
+
+            const message = this.safetyMessages[this.messageIndex % this.safetyMessages.length];
+            await this.sendMessageToRoom(roomId, message);
+            this.messageIndex++;
+        });
+
+        console.log('📅 Daily message schedule started.');
     }
 }
 
-console.log('🔧 Loading environment variables...');
-console.log({
-    ROCKET_CHAT_SERVER_URL: process.env.ROCKET_CHAT_SERVER_URL,
-    ROCKET_CHAT_USERNAME: process.env.ROCKET_CHAT_USERNAME,
-    ROCKET_CHAT_PASSWORD: process.env.ROCKET_CHAT_PASSWORD ? '****' : undefined,
-    DANNY_USERNAME: process.env.DANNY_USERNAME
-});
-
-(async () => {
-    try {
-        const automation = new RocketChatAutomation(
-            process.env.ROCKET_CHAT_SERVER_URL,
-            process.env.ROCKET_CHAT_USERNAME,
-            process.env.ROCKET_CHAT_PASSWORD,
-            process.env.DANNY_USERNAME
-        );
-
-        automation.startAutomation();
-
-    } catch (err) {
-        console.error('🔥 Failed to start automation:', err);
-    }
-})();
- 
+module.exports = RocketChatAutomation;
