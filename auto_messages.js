@@ -109,8 +109,6 @@ class RocketChatAutomation {
                 `Friendly reminder to be absolutely critical with your ability to make decisions while on the road, especially when navigating through blind spots.  
                 If you are merging then look at the side view mirrors and lean forward to get a different perspective.  
                 If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`
-            ];
-        }
         ];
     }
 
