@@ -118,7 +118,6 @@ class RocketChatAutomation {
             console.log(`${index + 1}. ${msg}`);
         });
     }
-}
 
 
     async authenticate() {
