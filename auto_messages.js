@@ -284,10 +284,7 @@ class RocketChatAutomation {
         }
 
         const message = this.getNextSafetyMessage();
-        const currentTime = new Date().toLocaleTimeString();
-        const fullMessage = `${message}\n\n*Automated Safety Reminder - ${currentTime}*`;
-
-        await this.sendMessage(roomId, fullMessage);
+        await this.sendMessage(roomId, message);
     }
 
     async getOrCreateDirectMessageRoom(username) {
