@@ -14,6 +14,8 @@ class RocketChatAutomation {
         this.messageIndex = 0;
         this.scheduledTask = null;
 
+        this.logDeploymentTime(); // Log deployment time in Central Time
+
         this.safetyMessages = [ 
             `:eyes: *Distracted Driving*  
             Keep your eyes on the road, check your mirrors, and glance at your GPS.  
@@ -110,6 +112,11 @@ class RocketChatAutomation {
             If you are merging then look at the side view mirrors and lean forward to get a different perspective.  
             If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`
          ];
+    }
+
+    logDeploymentTime() {
+        const nowCentral = DateTime.now().setZone('America/Chicago');
+        console.log(`🚀 Deployment completed on ${nowCentral.toFormat('MMMM dd, yyyy hh:mm:ss a')} Central Time`);
     }
 
     listSafetyMessages() {
