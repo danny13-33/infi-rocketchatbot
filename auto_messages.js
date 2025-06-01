@@ -159,15 +159,14 @@ class RocketChatAutomation {
         }
     }
 
-    // Updated business hours check using luxon and America/Chicago timezone
     isBusinessHours() {
         const now = DateTime.now().setZone('America/Chicago');
         const hour = now.hour;
         const minute = now.minute;
 
         const currentTime = hour * 60 + minute;
-        const startTime = 10 * 60;        // 10:00 AM
-        const endTime = 19 * 60 + 30;     // 7:30 PM
+        const startTime = 10 * 60;
+        const endTime = 19 * 60 + 30;
 
         return currentTime >= startTime && currentTime <= endTime;
     }
