@@ -2,6 +2,10 @@ require('dotenv').config();
 const axios = require('axios');
 const cron = require('node-cron');
 const { DateTime } = require('luxon');
+const fs = require('fs');
+const path = require('path');
+
+const STATE_PATH = path.join(__dirname, 'state.json');
 
 class RocketChatAutomation {
     constructor(serverUrl, username, password, dannyUsername) {
@@ -11,7 +15,6 @@ class RocketChatAutomation {
         this.dannyUsername = dannyUsername;
         this.authToken = null;
         this.userId = null;
-        this.messageIndex = 0;
         this.scheduledTask = null;
 
         this.safetyMessages = [
@@ -110,6 +113,57 @@ class RocketChatAutomation {
                 If you are merging then look at the side view mirrors and lean forward to get a different perspective.  
                 If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`
         ];
+
+        // State object: holds today's date (YYYY-MM-DD), shuffled order, and current index
+        this.state = { date: null, order: [], index: 0 };
+        this.dailyOrder = [];
+        this.messageIndex = 0;
+
+        this.loadOrInitState();
+    }
+
+    // Load existing state from disk or initialize a new order for today
+    loadOrInitState() {
+        const today = DateTime.now().setZone('America/Chicago').toISODate(); // "YYYY-MM-DD"
+
+        let persisted = null;
+        if (fs.existsSync(STATE_PATH)) {
+            try {
+                const raw = fs.readFileSync(STATE_PATH, 'utf8');
+                persisted = JSON.parse(raw);
+            } catch {
+                persisted = null;
+            }
+        }
+
+        if (persisted && persisted.date === today && Array.isArray(persisted.order) && typeof persisted.index === 'number') {
+            // Use the persisted shuffle and index
+            this.state = persisted;
+            this.dailyOrder = persisted.order;
+            this.messageIndex = persisted.index;
+        } else {
+            // Either no state, or it's from a previous day → create new shuffle
+            const count = this.safetyMessages.length;
+            const indices = Array.from({ length: count }, (_, i) => i);
+            // Fisher-Yates shuffle
+            for (let i = count - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            this.dailyOrder = indices;
+            this.messageIndex = 0;
+            this.state = { date: today, order: indices, index: 0 };
+            this.saveState();
+        }
+    }
+
+    // Write current state to disk
+    saveState() {
+        try {
+            fs.writeFileSync(STATE_PATH, JSON.stringify(this.state, null, 2), 'utf8');
+        } catch (err) {
+            console.error('❌ Failed to write state file:', err);
+        }
     }
 
     listSafetyMessages() {
@@ -211,8 +265,21 @@ class RocketChatAutomation {
     }
 
     getNextSafetyMessage() {
-        const message = this.safetyMessages[this.messageIndex];
-        this.messageIndex = (this.messageIndex + 1) % this.safetyMessages.length;
+        // Ensure if day changed, reload or reinitialize
+        const today = DateTime.now().setZone('America/Chicago').toISODate();
+        if (this.state.date !== today) {
+            this.loadOrInitState();
+        }
+
+        // Pick the next index from the shuffled dailyOrder
+        const idx = this.dailyOrder[this.messageIndex];
+        const message = this.safetyMessages[idx];
+
+        // Advance index and persist
+        this.messageIndex++;
+        this.state.index = this.messageIndex;
+        this.saveState();
+
         return message;
     }
 
