@@ -14,7 +14,7 @@ class RocketChatAutomation {
         this.messageIndex = 0;
         this.scheduledTask = null;
 
-        this.safetyMessages = [
+        this.safetyMessages = [ 
             `:eyes: *Distracted Driving*  
             Keep your eyes on the road, check your mirrors, and glance at your GPS.  
             :exclamation: It is a Netradyne alert if you are looking down or in one direction too long.  
@@ -109,7 +109,7 @@ class RocketChatAutomation {
             `Friendly reminder to be absolutely critical with your ability to make decisions while on the road, especially when navigating through blind spots.  
             If you are merging then look at the side view mirrors and lean forward to get a different perspective.  
             If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`
-        ];
+         ];
     }
 
     listSafetyMessages() {
@@ -160,102 +160,106 @@ class RocketChatAutomation {
         }
     }
 
-    async createRoomIfNotExists(roomName) {
+    async findRoomByName(roomName) {
         try {
-            const headers = {
-                'X-Auth-Token': this.authToken,
-                'X-User-Id': this.userId
-            };
+            const response = await axios.get(`${this.serverUrl}/api/v1/rooms.get`, {
+                headers: {
+                    'X-Auth-Token': this.authToken,
+                    'X-User-Id': this.userId
+                }
+            });
 
-            const existingRoom = await axios.get(`${this.serverUrl}/api/v1/rooms.get`, { headers });
-            const room = existingRoom.data.update.find(room => room.name === roomName);
-            if (room) {
-                return room._id;
-            }
-
-            const createResponse = await axios.post(
-                `${this.serverUrl}/api/v1/groups.create`,
-                { name: roomName },
-                { headers }
-            );
-
-            const roomId = createResponse.data.group._id;
-
-            // Optional: Add Danny to the room
-            await axios.post(
-                `${this.serverUrl}/api/v1/groups.invite`,
-                { roomId, userId: this.dannyUsername },
-                { headers }
-            );
-
-            return roomId;
+            const room = response.data.update.find(r => r.name === roomName);
+            return room ? room._id : null;
         } catch (error) {
-            console.error('❌ Error creating or retrieving room:', error.response?.data?.message || error.message);
+            console.error('❌ Error fetching room list:', error.message);
             return null;
         }
     }
 
-    async sendMessageToRoom(roomId, message) {
+    async sendMessage(roomId, message) {
         try {
-            await axios.post(
-                `${this.serverUrl}/api/v1/chat.postMessage`,
-                {
-                    roomId,
-                    text: message
-                },
-                {
-                    headers: {
-                        'X-Auth-Token': this.authToken,
-                        'X-User-Id': this.userId
-                    }
+            const response = await axios.post(`${this.serverUrl}/api/v1/chat.postMessage`, {
+                roomId,
+                text: message
+            }, {
+                headers: {
+                    'X-Auth-Token': this.authToken,
+                    'X-User-Id': this.userId
                 }
-            );
-            console.log(`✅ Message sent to room ID ${roomId}`);
+            });
+
+            console.log(`✅ Message sent to room ${roomId}`);
         } catch (error) {
-            console.error('❌ Error sending message:', error.response?.data?.message || error.message);
+            console.error('❌ Failed to send message:', error.response?.data?.message || error.message);
         }
     }
 
-    getRandomSafetyMessage() {
-        const index = Math.floor(Math.random() * this.safetyMessages.length);
-        return this.safetyMessages[index];
+    async sendDirectMessage(username, message) {
+        try {
+            const dmResponse = await axios.post(`${this.serverUrl}/api/v1/im.create`, {
+                username
+            }, {
+                headers: {
+                    'X-Auth-Token': this.authToken,
+                    'X-User-Id': this.userId
+                }
+            });
+
+            const roomId = dmResponse.data.room.rid;
+            await this.sendMessage(roomId, message);
+        } catch (error) {
+            console.error(`❌ Failed to send direct message to ${username}:`, error.message);
+        }
     }
 
     async postDailySafetyMessage() {
-        if (!await this.authenticate()) return;
-
         const roomName = this.getCurrentRoomName();
-        const roomId = await this.createRoomIfNotExists(roomName);
-        if (!roomId) return;
+        const message = this.safetyMessages[this.messageIndex];
 
-        const message = this.getRandomSafetyMessage();
-        await this.sendMessageToRoom(roomId, message);
+        if (!(await this.authenticate())) return;
+
+        const roomId = await this.findRoomByName(roomName);
+
+        if (roomId) {
+            await this.sendMessage(roomId, message);
+        } else {
+            console.warn(`⚠️ Room "${roomName}" not found. Sending message to ${this.dannyUsername} directly.`);
+            await this.sendDirectMessage(this.dannyUsername, `Room "${roomName}" not found. Here's the safety message:\n\n${message}`);
+        }
+
+        // Rotate to the next message
+        this.messageIndex = (this.messageIndex + 1) % this.safetyMessages.length;
     }
 
-    startCronJob() {
-        // Schedule to run daily at 8:00 AM
-        this.scheduledTask = cron.schedule('0 8 * * *', () => {
+    startDailyPost(cronTime = '0 9 * * *') {
+        if (this.scheduledTask) {
+            console.log('⏹️  Cancelling existing scheduled task.');
+            this.scheduledTask.stop();
+        }
+
+        console.log('⏰ Scheduling daily safety message...');
+        this.scheduledTask = cron.schedule(cronTime, () => {
+            console.log(`📤 Posting daily safety message at ${DateTime.local().toISOTime()}`);
             this.postDailySafetyMessage();
-        }, {
-            scheduled: true,
-            timezone: "America/Chicago" // Set to your timezone
         });
-
-        console.log('🚀 Daily safety message cron job started');
     }
 
-    async start() {
-        await this.postDailySafetyMessage();
-        this.startCronJob();
+    stop() {
+        if (this.scheduledTask) {
+            this.scheduledTask.stop();
+            console.log('🛑 Scheduled task stopped.');
+        }
     }
 }
 
-// Usage
+// Example usage:
 const automation = new RocketChatAutomation(
     process.env.ROCKET_CHAT_URL,
-    process.env.ROCKET_CHAT_USERNAME,
+    process.env.ROCKET_CHAT_USER,
     process.env.ROCKET_CHAT_PASSWORD,
-    process.env.DANNY_USER_ID
+    process.env.DANNY_USERNAME // e.g., 'dhernandez'
 );
 
-automation.start();
+automation.startDailyPost(); // default 9:00 AM daily
+// automation.listSafetyMessages(); // optional
