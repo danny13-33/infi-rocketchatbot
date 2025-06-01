@@ -14,7 +14,6 @@ class RocketChatAutomation {
         this.scheduledTask = null;
 
         this.safetyMessages = [
-            this.safetyMessages = [
                 `:eyes: *Distracted Driving*  
                 Keep your eyes on the road, check your mirrors, and glance at your GPS.  
                 :exclamation: It is a Netradyne alert if you are looking down or in one direction too long.  
@@ -108,7 +107,7 @@ class RocketChatAutomation {
     
                 `Friendly reminder to be absolutely critical with your ability to make decisions while on the road, especially when navigating through blind spots.  
                 If you are merging then look at the side view mirrors and lean forward to get a different perspective.  
-                If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`,
+                If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`
         ];
     }   
 
