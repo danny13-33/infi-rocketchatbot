@@ -15,8 +15,12 @@ class RocketChatAutomation {
         this.dannyUsername = dannyUsername;
         this.authToken = null;
         this.userId = null;
+<<<<<<< HEAD
         this.scheduledSafetyTask = null;
         this.scheduledHydrationTask = null;
+=======
+        this.scheduledTask = null;
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
 
         this.safetyMessages = [
             `:eyes: *Distracted Driving*  
@@ -32,7 +36,13 @@ class RocketChatAutomation {
                 Distracted driving is one of the top causes of on-road accidents and puts you, other drivers, and community members at risk. Common distractions like using your phone or looking away from the road for more than a couple seconds are some of the riskiest distractions. Stay alert and focused to make every trip a safe one for you and the community.  
 
                 *DO NOT HOLD YOUR PHONE WHILE DRIVING*`,
+<<<<<<< HEAD
             `Amazon is not playing with Safety any longer. Any Severe Infractions will suspend your account immediately while on route. If that occurs there’s nothing we can do other than send you back to station and take immediate disciplinary action including termination. Ensure you are adhering to all Safety measures and if you see a yellow light be prepared to STOP.`,
+=======
+
+            `Amazon is not playing with Safety any longer. Any Severe Infractions will suspend your account immediately while on route. If that occurs there’s nothing we can do other than send you back to station and take immediate disciplinary action including termination. Ensure you are adhering to all Safety measures and if you see a yellow light be prepared to STOP.`,
+
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
             `:truck: *Watch your FOLLOWING DISTANCE Titans!*  
                 You should be AT LEAST 3 van lengths behind the vehicle in front of you.  
                 This can increase depending on road conditions, your speed, and the weather.  
@@ -42,6 +52,7 @@ class RocketChatAutomation {
 
                 Please remember to leave plenty of space in between you and the vehicle in front of you. Increasing the distance between you and the car ahead can give you the time you need to recognize a hazard, should one enter your path, and respond safely.  
                 Keep at least an 8-second (3 car) distance between you and the vehicle in front of you. Slow down to give space when drivers merge. If another driver cuts you off, slow down to create distance.`,
+<<<<<<< HEAD
             `:no_entry_sign: *NO PET ENGAGEMENT*  
                 There is a strict no pet engagement policy. It doesn't matter the size or breed of the animal, PLEASE leave them alone. If there is an animal present & the customer has not already restrained them, conduct Contact Compliance.`,
             `If you see a dog or signs of a dog at a delivery location, you can request that the paw print icon be added by navigating to the ‘Help’ page in the Delivery App and selecting ‘Report a dog on your route.’`,
@@ -49,38 +60,86 @@ class RocketChatAutomation {
             `Before you start walking to your destination, look at where you will be placing your feet. Don't jump in and out of the vans. Your legs are not designed to absorb incredible impact over and over. Use all of the steps available to you and try to maintain 3 points of contact.  
                 Rushing is when you make the most mistakes. Slow is smooth, smooth is fast. Find your groove and stick with it.`,
             `On days where moisture is high, we are also at high risk for slips, trips and falls. Three points of contact when getting out of the vans and be highly familiar with your pathing today. Being safe on the road is something you are all extremely capable of doing, please do it!`,
+=======
+
+            `:no_entry_sign: *NO PET ENGAGEMENT*  
+                There is a strict no pet engagement policy. It doesn't matter the size or breed of the animal, PLEASE leave them alone. If there is an animal present & the customer has not already restrained them, conduct Contact Compliance.`,
+
+            `If you see a dog or signs of a dog at a delivery location, you can request that the paw print icon be added by navigating to the ‘Help’ page in the Delivery App and selecting ‘Report a dog on your route.’`,
+
+            `To avoid dog bites: If you see a dog present, mark it as unable to deliver due to the dog and then follow contact compliance (CC). Never get out of the van if you see a dog loose.`,
+
+            `Before you start walking to your destination, look at where you will be placing your feet. Don't jump in and out of the vans. Your legs are not designed to absorb incredible impact over and over. Use all of the steps available to you and try to maintain 3 points of contact.  
+                Rushing is when you make the most mistakes. Slow is smooth, smooth is fast. Find your groove and stick with it.`,
+
+            `On days where moisture is high, we are also at high risk for slips, trips and falls. Three points of contact when getting out of the vans and be highly familiar with your pathing today. Being safe on the road is something you are all extremely capable of doing, please do it!`,
+
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
             `Wearing a seatbelt is one of the best things you can do to protect yourself when driving. Remember to always wear your seatbelt correctly — across your chest and waist. Never sit on your seatbelt when it is buckled.  
                 If you feel your seatbelt is not working properly, post your concern in the van issues chat & let one of the members of Management know.  
                 No vehicle should be on the road with a faulty seatbelt.  
 
                 Remember to always wear your seatbelt when the vehicle is moving and only use your device when the vehicle is sitting still! Watch your speeds and let's have a great day today!`,
+<<<<<<< HEAD
+=======
+
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
             `:truck: :dash: :dash: *Speeding*  
                 Speeding is one of the most common causes of accidents on the road.  
                 If you are not sure of what the speed limit is, you should proceed with caution and operate at a speed that is typical for the road type and location (e.g., 25–30 mph in a neighborhood).  
                 Be on the lookout for road signs indicating speed limit changes, as speeding violations are easy to avoid.  
                 *Don't go off of what GPS tells you. Go off what the SIGNS say, because that is what the camera sees!*`,
+<<<<<<< HEAD
             `Make sure you keep an eye on your speed while delivering today! If you're in doubt about what the speed limit is, drive slower than you think it is. Always follow signs over what the GPS says the limit is. Let's keep today safe and finish strong.`,
             `Water is very important to your body's health. Hydration should be a top priority every time you know that you are scheduled to come in. Come to work hydrated with plenty of supplies so you can avoid suffering from dehydration while you are out on your route.`,
             `Please ensure that you are arriving to work hydrated with adequate water supply. There may be some water out on the pads, but understand that bringing water to work is your responsibility.  
                 Amazon does run out of water from time to time. If you don't arrive hydrated along with bringing adequate water supplies, you have essentially set yourself up to be a victim of dehydration.  
                 *If there is water on the pad, please be considerate of others.*`,
+=======
+
+            `Make sure you keep an eye on your speed while delivering today! If you're in doubt about what the speed limit is, drive slower than you think it is. Always follow signs over what the GPS says the limit is. Let's keep today safe and finish strong.`,
+
+            `Water is very important to your body's health. Hydration should be a top priority every time you know that you are scheduled to come in. Come to work hydrated with plenty of supplies so you can avoid suffering from dehydration while you are out on your route.`,
+
+            `Please ensure that you are arriving to work hydrated with adequate water supply. There may be some water out on the pads, but understand that bringing water to work is your responsibility.  
+                Amazon does run out of water from time to time. If you don't arrive hydrated along with bringing adequate water supplies, you have essentially set yourself up to be a victim of dehydration.  
+                *If there is water on the pad, please be considerate of others.*`,
+
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
             `:stop_sign: *Stop Signs* :stop_sign:  
                 Come to a complete stop at all stop signs. Stop signs are placed at intersections to protect both you & others from avoidable crashes.  
                 Can't see if any oncoming traffic is coming from where the sign is placed?  
                 A good practice is to make a complete stop where the sign is placed & creep forward until you can see whether any oncoming traffic is approaching. Stay Safe Titans!  
                 *Stop the front of your vehicle BEHIND the stop sign for at least 2 full seconds.*`,
+<<<<<<< HEAD
             `Keep an eye out for stop signs! You must come to a complete stop at all stop signs, this means pressing the brake completely until the van is no longer moving. Any motion before continuing will cause an alert!`,
+=======
+
+            `Keep an eye out for stop signs! You must come to a complete stop at all stop signs, this means pressing the brake completely until the van is no longer moving. Any motion before continuing will cause an alert!`,
+
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
             `:traffic_light: *Traffic Lights* :traffic_light:  
                 Someone runs a red light on average every 20 minutes at urban intersections.  
                 Traffic Lights are placed at intersections to help maintain a safe flow of traffic & maintain the safety of yourself & others while on the road.  
                 Approaching a light & it's turning yellow? Safely come to a stop before entering the intersection.  
                 *COME TO A STOP when the light turns yellow. DON'T TRY TO BEAT THE LIGHT!*`,
+<<<<<<< HEAD
             `TITANS, at no point throughout your route should you be delivering with ANY door (driver side, sliding, or back door) open.  
                 This is one of the most unsafe practices you can do while delivering. Someone can hop inside or take packages from your vehicle. Also, packages can fall out without you noticing.`,
+=======
+
+            `TITANS, at no point throughout your route should you be delivering with ANY door (driver side, sliding, or back door) open.  
+                This is one of the most unsafe practices you can do while delivering. Someone can hop inside or take packages from your vehicle. Also, packages can fall out without you noticing.`,
+
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
             `Being vigilant is one of many important skills you can utilize while you are on route.  
                 Pedestrians are usually present at intersections, however they may decide to enter the road at any point with or without a crosswalk or signal present.  
                 This is especially important at times like when school zones begin or end or near holidays.  
                 *Keep an eye out for an increase in traffic during the busy hours or days.*`,
+<<<<<<< HEAD
+=======
+
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
             `:hot_face: *Hot Weather Tips* :hot_face:  
                 You are responsible for your own health and showing up to work prepared.  
 
@@ -91,12 +150,20 @@ class RocketChatAutomation {
                 :point_up: _Recovery_ – Don’t rely solely on meds like Ibuprofen. Recover with hydration, good food, and rest.  
 
                 Practice these the day of and the night before coming into work to prevent heat-related illness.`,
+<<<<<<< HEAD
+=======
+
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
             `Friendly reminder to be absolutely critical with your ability to make decisions while on the road, especially when navigating through blind spots.  
                 If you are merging then look at the side view mirrors and lean forward to get a different perspective.  
                 If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`
         ];
 
+<<<<<<< HEAD
         // Persisted state: { date: "YYYY-MM-DD", order: [shuffled indices], index: integer }
+=======
+        // State object: holds today's date (YYYY-MM-DD), shuffled order, and current index
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
         this.state = { date: null, order: [], index: 0 };
         this.dailyOrder = [];
         this.messageIndex = 0;
@@ -104,7 +171,11 @@ class RocketChatAutomation {
         this.loadOrInitState();
     }
 
+<<<<<<< HEAD
     // Load existing state or initialize a new shuffle for today
+=======
+    // Load existing state from disk or initialize a new order for today
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
     loadOrInitState() {
         const today = DateTime.now().setZone('America/Chicago').toISODate(); // "YYYY-MM-DD"
 
@@ -118,6 +189,7 @@ class RocketChatAutomation {
             }
         }
 
+<<<<<<< HEAD
         if (
             persisted &&
             persisted.date === today &&
@@ -125,14 +197,25 @@ class RocketChatAutomation {
             typeof persisted.index === 'number'
         ) {
             // Use the persisted shuffle + index
+=======
+        if (persisted && persisted.date === today && Array.isArray(persisted.order) && typeof persisted.index === 'number') {
+            // Use the persisted shuffle and index
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
             this.state = persisted;
             this.dailyOrder = persisted.order;
             this.messageIndex = persisted.index;
         } else {
+<<<<<<< HEAD
             // New day or no valid persisted state → shuffle indices
             const count = this.safetyMessages.length;
             const indices = Array.from({ length: count }, (_, i) => i);
             // Fisher–Yates shuffle
+=======
+            // Either no state, or it's from a previous day → create new shuffle
+            const count = this.safetyMessages.length;
+            const indices = Array.from({ length: count }, (_, i) => i);
+            // Fisher-Yates shuffle
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
             for (let i = count - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [indices[i], indices[j]] = [indices[j], indices[i]];
@@ -144,7 +227,11 @@ class RocketChatAutomation {
         }
     }
 
+<<<<<<< HEAD
     // Persist current state to disk
+=======
+    // Write current state to disk
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
     saveState() {
         try {
             fs.writeFileSync(STATE_PATH, JSON.stringify(this.state, null, 2), 'utf8');
@@ -245,16 +332,28 @@ class RocketChatAutomation {
     }
 
     getNextSafetyMessage() {
+<<<<<<< HEAD
         // If the date has rolled over since last load, reinitialize
+=======
+        // Ensure if day changed, reload or reinitialize
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
         const today = DateTime.now().setZone('America/Chicago').toISODate();
         if (this.state.date !== today) {
             this.loadOrInitState();
         }
 
+<<<<<<< HEAD
         const idx = this.dailyOrder[this.messageIndex];
         const message = this.safetyMessages[idx];
 
         // Advance index and save state
+=======
+        // Pick the next index from the shuffled dailyOrder
+        const idx = this.dailyOrder[this.messageIndex];
+        const message = this.safetyMessages[idx];
+
+        // Advance index and persist
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
         this.messageIndex++;
         this.state.index = this.messageIndex;
         this.saveState();
@@ -328,6 +427,7 @@ class RocketChatAutomation {
 
         const message = this.getNextSafetyMessage();
         await this.sendMessage(roomId, message);
+<<<<<<< HEAD
     }
 
     async sendHydrationMessage() {
@@ -366,6 +466,8 @@ class RocketChatAutomation {
             @all`;
 
         await this.sendMessage(roomId, hydrationMessage);
+=======
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
     }
 
     async getOrCreateDirectMessageRoom(username) {
@@ -419,6 +521,7 @@ class RocketChatAutomation {
         const nowCT = DateTime.now().setZone('America/Chicago').toLocaleString(DateTime.DATETIME_FULL);
         console.log(`🚀 Deployment Time (America/Chicago): ${nowCT}`);
 
+<<<<<<< HEAD
         console.log('🚀 Starting Infinite Delivery OPS Automation');
         console.log('📅 Safety messages: every 30 minutes from 10:00 AM to 7:30 PM CT daily');
         console.log('📅 Hydration messages: every hour on the hour from 10:00 AM to 6:00 PM CT, May 1 – September 30');
@@ -450,6 +553,22 @@ class RocketChatAutomation {
             },
             { timezone: 'America/Chicago' }
         );
+=======
+        console.log('🚀 Starting Infinite Delivery OPS Safety Message Automation');
+        console.log('📅 Messages will be sent every 30 minutes from 10:00 AM to 7:30 PM America/Chicago timezone, every day of the week');
+
+        this.sendImmediateMessageToDanny();
+
+        this.scheduledTask = cron.schedule('0,30 10-19 * * *', async () => {
+            try {
+                await this.sendSafetyMessage();
+            } catch (error) {
+                console.error('🔥 Error during scheduled safety message:', error.message || error);
+            }
+        }, {
+            timezone: 'America/Chicago'
+        });
+>>>>>>> ef278d1e8b5a1147446d15a0c87a9a464d0447b0
     }
 
     stopAutomation() {
