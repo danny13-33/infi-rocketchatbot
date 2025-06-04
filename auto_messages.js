@@ -17,6 +17,7 @@ class RocketChatAutomation {
         this.userId = null;
         this.scheduledSafetyTask = null;
         this.scheduledHydrationTask = null;
+        this.scheduledHeatReminderTask = null;
 
         this.safetyMessages = [
             `:eyes: *Distracted Driving*  
@@ -362,10 +363,48 @@ class RocketChatAutomation {
         const hydrationMessage =
             `🌊HYDRATE HYDRATE HYDRATE🌊\n` +
             `If you are reading this drink water now!\n` +
-            `Do Not be a victim to Heat. Stay Hydrated` +
-            '@all';
+            `Do Not be a victim to Heat. Stay Hydrated`;
 
         await this.sendMessage(roomId, hydrationMessage);
+    }
+
+    async sendHeatReminderMessage() {
+        // Only run from May 1st to September 30th (month 5–9 inclusive)
+        const nowCT = DateTime.now().setZone('America/Chicago');
+        const month = nowCT.month;
+        if (month < 5 || month > 9) {
+            return;
+        }
+
+        if (!this.authToken || !this.userId) {
+            const authSuccess = await this.authenticate();
+            if (!authSuccess) {
+                console.error('❌ Failed to authenticate for heat reminder message');
+                return;
+            }
+        }
+
+        const roomName = this.getCurrentRoomName();
+        const roomId = await this.checkRoomExists(roomName);
+
+        if (!roomId) {
+            console.log(`⏳ Room "${roomName}" not created yet - skipping heat reminder message`);
+            return;
+        }
+
+        if (!this.isRoomForToday(roomName)) {
+            console.log(`📅 Room "${roomName}" exists but is not today’s room - skipping heat reminder message`);
+            return;
+        }
+
+        const heatReminderMessage =
+            `@all ⚠️ Attention Titans! ⚠️\n\n` +
+            `As always, we're reminding you that the Texas heat is no joke, especially during the peak summer months. That’s why we strongly encourage you to knock out more than half of your route by 2 PM. It’s absolutely achievable if you start strong and stay focused.\n\n` +
+            `By hustling early, you’ll give yourself the chance to slow down and cool off when the heat is at its worst. The secret to success out here? Keep moving, stay organized, and manage your time wisely.\n\n` +
+            `We believe in every single one of you, but more importantly, you’ve got to believe in yourself. Let’s stay safe, stay smart, and crush it out there.\n\n` +
+            `You’ve got this Titans! 💪🔥`;
+
+        await this.sendMessage(roomId, heatReminderMessage);
     }
 
     async getOrCreateDirectMessageRoom(username) {
@@ -422,6 +461,7 @@ class RocketChatAutomation {
         console.log('🚀 Starting Infinite Delivery OPS Automation');
         console.log('📅 Safety messages: every 30 minutes from 10:00 AM to 7:30 PM CT daily');
         console.log('📅 Hydration messages: every hour on the hour from 10:00 AM to 6:00 PM CT, May 1 – September 30');
+        console.log('📅 Heat reminder: daily at 9:00 AM CT, May 1 – September 30');
 
         this.sendImmediateMessageToDanny();
 
@@ -450,6 +490,19 @@ class RocketChatAutomation {
             },
             { timezone: 'America/Chicago' }
         );
+
+        // Heat reminder: at minute 0, hour 9, months 5–9, every day
+        this.scheduledHeatReminderTask = cron.schedule(
+            '0 9 * 5-9 *',
+            async () => {
+                try {
+                    await this.sendHeatReminderMessage();
+                } catch (error) {
+                    console.error('🔥 Error during scheduled heat reminder message:', error.message || error);
+                }
+            },
+            { timezone: 'America/Chicago' }
+        );
     }
 
     stopAutomation() {
@@ -460,6 +513,10 @@ class RocketChatAutomation {
         if (this.scheduledHydrationTask) {
             this.scheduledHydrationTask.stop();
             console.log('⏹️ Stopped hydration automation');
+        }
+        if (this.scheduledHeatReminderTask) {
+            this.scheduledHeatReminderTask.stop();
+            console.log('⏹️ Stopped heat reminder automation');
         }
     }
 }
