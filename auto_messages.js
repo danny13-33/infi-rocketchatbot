@@ -34,7 +34,7 @@ class RocketChatAutomation {
 
              *DO NOT HOLD YOUR PHONE WHILE DRIVING*`,
 
-            `:exclamation:Amazon is not playing with Safety any longer. Any Severe Infractions will
+            `:exclamation: Amazon is not playing with Safety any longer. Any Severe Infractions will
              suspend your account immediately while on route. If that occurs there’s nothing
              we can do other than send you back to station and take immediate disciplinary
              action including termination. Ensure you are adhering to all Safety measures and if
