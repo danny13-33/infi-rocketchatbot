@@ -18,6 +18,7 @@ class RocketChatAutomation {
         this.scheduledSafetyTask = null;
         this.scheduledHydrationTask = null;
         this.scheduledHeatReminderTask = null;
+        this.scheduledClockInTask = null;
 
         this.safetyMessages = [
             `:eyes: *Distracted Driving*  
@@ -150,7 +151,13 @@ class RocketChatAutomation {
              
              If you are merging then look at the side view mirrors and lean forward to get a different perspective.
 
-             If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`
+             If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`,
+
+            `📌 Reminder: Try to avoid reversing whenever possible. If you must reverse, do not exceed 5 MPH — this triggers Netradyne alerts and, more importantly, helps keep you and others safe. 🚸
+
+             Also, avoid parking on driveways. If you can see the front door from the street, there’s no need to pull into someone’s property. 🏠
+             
+             Let’s stay safe and smart out there!`
         ];
 
         // Persisted state: { date: "YYYY-MM-DD", order: [shuffled indices], index: integer }
@@ -163,7 +170,7 @@ class RocketChatAutomation {
 
     // Load existing state or initialize a new shuffle for today
     loadOrInitState() {
-        const today = DateTime.now().setZone('America/Chicago').toISODate(); // "YYYY-MM-DD"
+        const today = DateTime.now().setZone('America/Chicago').toISODate();
 
         let persisted = null;
         if (fs.existsSync(STATE_PATH)) {
@@ -181,15 +188,12 @@ class RocketChatAutomation {
             Array.isArray(persisted.order) &&
             typeof persisted.index === 'number'
         ) {
-            // Use the persisted shuffle + index
             this.state = persisted;
             this.dailyOrder = persisted.order;
             this.messageIndex = persisted.index;
         } else {
-            // New day or no valid persisted state → shuffle indices
             const count = this.safetyMessages.length;
             const indices = Array.from({ length: count }, (_, i) => i);
-            // Fisher–Yates shuffle
             for (let i = count - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [indices[i], indices[j]] = [indices[j], indices[i]];
@@ -234,7 +238,6 @@ class RocketChatAutomation {
     }
 
     getCurrentRoomName() {
-        // Use America/Chicago timezone to determine the correct "today"
         const nowCT = DateTime.now().setZone('America/Chicago');
         const month = nowCT.monthLong;
         const day = nowCT.day;
@@ -255,7 +258,7 @@ class RocketChatAutomation {
 
     async checkRoomExists(roomName) {
         try {
-            const getRoomResponse = await axios.get(
+            const res = await axios.get(
                 `${this.serverUrl}/api/v1/rooms.info?roomName=${encodeURIComponent(roomName)}`,
                 {
                     headers: {
@@ -265,7 +268,7 @@ class RocketChatAutomation {
                 }
             );
             console.log(`✅ Found existing room: "${roomName}"`);
-            return getRoomResponse.data.room._id;
+            return res.data.room._id;
         } catch (error) {
             if (error.response?.status === 400) {
                 console.log(`⚠️ Room "${roomName}" does not exist yet`);
@@ -279,7 +282,7 @@ class RocketChatAutomation {
 
     async createRoom(roomName, description = null) {
         try {
-            const createRoomResponse = await axios.post(
+            const res = await axios.post(
                 `${this.serverUrl}/api/v1/channels.create`,
                 {
                     name: roomName,
@@ -294,45 +297,35 @@ class RocketChatAutomation {
                 }
             );
             console.log(`✅ Created new room: "${roomName}"`);
-            return createRoomResponse.data.channel._id;
-        } catch (createError) {
-            console.error('❌ Failed to create room:', createError.response?.data?.message || createError.message);
+            return res.data.channel._id;
+        } catch (error) {
+            console.error('❌ Failed to create room:', error.response?.data?.message || error.message);
             return null;
         }
     }
 
     getNextSafetyMessage() {
-        // If the date has rolled over since last load, reinitialize
         const today = DateTime.now().setZone('America/Chicago').toISODate();
         if (this.state.date !== today) {
             this.loadOrInitState();
         }
 
         const idx = this.dailyOrder[this.messageIndex];
-        const message = this.safetyMessages[idx];
+        const msg = this.safetyMessages[idx];
 
-        // Advance index and save state
         this.messageIndex++;
         this.state.index = this.messageIndex;
         this.saveState();
 
-        return message;
+        return msg;
     }
 
     async sendMessage(roomId, message) {
         try {
             await axios.post(
                 `${this.serverUrl}/api/v1/chat.postMessage`,
-                {
-                    roomId: roomId,
-                    text: message
-                },
-                {
-                    headers: {
-                        'X-Auth-Token': this.authToken,
-                        'X-User-Id': this.userId
-                    }
-                }
+                { roomId, text: message },
+                { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
             );
             console.log(`📤 Message sent: "${message.substring(0, 50)}..."`);
             return true;
@@ -344,12 +337,8 @@ class RocketChatAutomation {
 
     isBusinessHours() {
         const now = DateTime.now().setZone('America/Chicago');
-        const hour = now.hour;
-        const minute = now.minute;
-        const currentTime = hour * 60 + minute;
-        const startTime = 10 * 60;
-        const endTime = 19 * 60 + 30;
-        return currentTime >= startTime && currentTime <= endTime;
+        const minutes = now.hour * 60 + now.minute;
+        return minutes >= 10 * 60 && minutes <= 19 * 60 + 30;
     }
 
     isRoomForToday(roomName) {
@@ -357,64 +346,31 @@ class RocketChatAutomation {
     }
 
     async sendSafetyMessage() {
-        if (!this.isBusinessHours()) {
-            console.log('⏰ Outside business hours, skipping safety message');
-            return;
-        }
+        if (!this.isBusinessHours()) return;
 
         if (!this.authToken || !this.userId) {
-            const authSuccess = await this.authenticate();
-            if (!authSuccess) {
-                console.error('❌ Failed to authenticate, skipping this cycle');
-                return;
-            }
+            if (!(await this.authenticate())) return;
         }
 
         const roomName = this.getCurrentRoomName();
         const roomId = await this.checkRoomExists(roomName);
-
-        if (!roomId) {
-            console.log(`⏳ Room "${roomName}" not created yet - skipping safety message`);
-            return;
-        }
-
-        if (!this.isRoomForToday(roomName)) {
-            console.log(`📅 Room "${roomName}" exists but is not today’s room - skipping`);
-            return;
-        }
+        if (!roomId || !this.isRoomForToday(roomName)) return;
 
         const message = this.getNextSafetyMessage();
         await this.sendMessage(roomId, message);
     }
 
     async sendHydrationMessage() {
-        // Only run from May 1st to September 30th (month 5–9 inclusive)
         const nowCT = DateTime.now().setZone('America/Chicago');
-        const month = nowCT.month;
-        if (month < 5 || month > 9) {
-            return;
-        }
+        if (nowCT.month < 5 || nowCT.month > 9) return;
 
         if (!this.authToken || !this.userId) {
-            const authSuccess = await this.authenticate();
-            if (!authSuccess) {
-                console.error('❌ Failed to authenticate for hydration message');
-                return;
-            }
+            if (!(await this.authenticate())) return;
         }
 
         const roomName = this.getCurrentRoomName();
         const roomId = await this.checkRoomExists(roomName);
-
-        if (!roomId) {
-            console.log(`⏳ Room "${roomName}" not created yet - skipping hydration message`);
-            return;
-        }
-
-        if (!this.isRoomForToday(roomName)) {
-            console.log(`📅 Room "${roomName}" exists but is not today’s room - skipping hydration message`);
-            return;
-        }
+        if (!roomId || !this.isRoomForToday(roomName)) return;
 
         const hydrationMessage =
             `🌊HYDRATE HYDRATE HYDRATE🌊\n` +
@@ -425,33 +381,16 @@ class RocketChatAutomation {
     }
 
     async sendHeatReminderMessage() {
-        // Only run from May 1st to September 30th (month 5–9 inclusive)
         const nowCT = DateTime.now().setZone('America/Chicago');
-        const month = nowCT.month;
-        if (month < 5 || month > 9) {
-            return;
-        }
+        if (nowCT.month < 5 || nowCT.month > 9) return;
 
         if (!this.authToken || !this.userId) {
-            const authSuccess = await this.authenticate();
-            if (!authSuccess) {
-                console.error('❌ Failed to authenticate for heat reminder message');
-                return;
-            }
+            if (!(await this.authenticate())) return;
         }
 
         const roomName = this.getCurrentRoomName();
         const roomId = await this.checkRoomExists(roomName);
-
-        if (!roomId) {
-            console.log(`⏳ Room "${roomName}" not created yet - skipping heat reminder message`);
-            return;
-        }
-
-        if (!this.isRoomForToday(roomName)) {
-            console.log(`📅 Room "${roomName}" exists but is not today’s room - skipping heat reminder message`);
-            return;
-        }
+        if (!roomId || !this.isRoomForToday(roomName)) return;
 
         const heatReminderMessage =
             `@all ⚠️ Attention Titans! ⚠️\n\n` +
@@ -463,9 +402,25 @@ class RocketChatAutomation {
         await this.sendMessage(roomId, heatReminderMessage);
     }
 
+    async sendClockInReminderMessage() {
+        if (!this.authToken || !this.userId) {
+            if (!(await this.authenticate())) return;
+        }
+
+        const roomName = this.getCurrentRoomName();
+        const roomId = await this.checkRoomExists(roomName);
+        if (!roomId || !this.isRoomForToday(roomName)) return;
+
+        const clockInMessage =
+            `*Attention Titans*\n` +
+            `@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in send an email to time@infi-dau7.com immediately.  Thank you!`;
+
+        await this.sendMessage(roomId, clockInMessage);
+    }
+
     async getOrCreateDirectMessageRoom(username) {
         try {
-            const response = await axios.post(
+            const res = await axios.post(
                 `${this.serverUrl}/api/v1/im.create`,
                 { username },
                 {
@@ -475,7 +430,7 @@ class RocketChatAutomation {
                     }
                 }
             );
-            return response.data.room._id;
+            return res.data.room._id;
         } catch (error) {
             console.error(`❌ Failed to get/create DM room with ${username}:`, error.response?.data?.message || error.message);
             return null;
@@ -484,18 +439,11 @@ class RocketChatAutomation {
 
     async sendImmediateMessageToDanny() {
         if (!this.authToken || !this.userId) {
-            const authSuccess = await this.authenticate();
-            if (!authSuccess) {
-                console.error('❌ Failed to authenticate for immediate message to Danny');
-                return;
-            }
+            if (!(await this.authenticate())) return;
         }
 
         const dannyRoomId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
-        if (!dannyRoomId) {
-            console.warn('⚠️ Could not get or create DM room with Danny');
-            return;
-        }
+        if (!dannyRoomId) return;
 
         const immediateMessage =
             `✅ Safety Automation Deployed Successfully.\n` +
@@ -510,7 +458,6 @@ class RocketChatAutomation {
     }
 
     startAutomation() {
-        // Print deployment date/time in Central Time
         const nowCT = DateTime.now().setZone('America/Chicago').toLocaleString(DateTime.DATETIME_FULL);
         console.log(`🚀 Deployment Time (America/Chicago): ${nowCT}`);
 
@@ -518,10 +465,11 @@ class RocketChatAutomation {
         console.log('📅 Safety messages: every 30 minutes from 10:00 AM to 7:30 PM CT daily');
         console.log('📅 Hydration messages: every hour on the hour from 10:00 AM to 6:00 PM CT, May 1 – September 30');
         console.log('📅 Heat reminder: daily at 9:00 AM CT, May 1 – September 30');
+        console.log('📅 Clock-in reminder: daily at 9:25 AM CT');
 
         this.sendImmediateMessageToDanny();
 
-        // Safety reminders: every 30 minutes 10:00–19:30 CT, every day
+        // Safety reminders
         this.scheduledSafetyTask = cron.schedule(
             '0,30 10-19 * * *',
             async () => {
@@ -534,7 +482,7 @@ class RocketChatAutomation {
             { timezone: 'America/Chicago' }
         );
 
-        // Hydration reminder: at minute 0, hours 10–18, months 5–9, every day
+        // Hydration reminders
         this.scheduledHydrationTask = cron.schedule(
             '0 10-18 * 5-9 *',
             async () => {
@@ -547,7 +495,7 @@ class RocketChatAutomation {
             { timezone: 'America/Chicago' }
         );
 
-        // Heat reminder: at minute 0, hour 9, months 5–9, every day
+        // Heat reminders
         this.scheduledHeatReminderTask = cron.schedule(
             '0 9 * 5-9 *',
             async () => {
@@ -555,6 +503,19 @@ class RocketChatAutomation {
                     await this.sendHeatReminderMessage();
                 } catch (error) {
                     console.error('🔥 Error during scheduled heat reminder message:', error.message || error);
+                }
+            },
+            { timezone: 'America/Chicago' }
+        );
+
+        // Clock-in reminder
+        this.scheduledClockInTask = cron.schedule(
+            '25 9 * * *',
+            async () => {
+                try {
+                    await this.sendClockInReminderMessage();
+                } catch (error) {
+                    console.error('🔥 Error during scheduled clock-in reminder message:', error.message || error);
                 }
             },
             { timezone: 'America/Chicago' }
@@ -573,6 +534,10 @@ class RocketChatAutomation {
         if (this.scheduledHeatReminderTask) {
             this.scheduledHeatReminderTask.stop();
             console.log('⏹️ Stopped heat reminder automation');
+        }
+        if (this.scheduledClockInTask) {
+            this.scheduledClockInTask.stop();
+            console.log('⏹️ Stopped clock-in reminder automation');
         }
     }
 }
