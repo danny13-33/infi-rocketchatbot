@@ -34,15 +34,10 @@ class RocketChatAutomation {
 
              *DO NOT HOLD YOUR PHONE WHILE DRIVING*`,
 
-            `:exclamation: Amazon is not playing with Safety any longer. Any Severe Infractions will
-             suspend your account immediately while on route. If that occurs there’s nothing
-             we can do other than send you back to station and take immediate disciplinary
-             action including termination. Ensure you are adhering to all Safety measures and if
-             you see a yellow light be prepared to STOP.`,
+            `:exclamation: Amazon is not playing with Safety any longer. Any Severe Infractions will suspend your account immediately while on route. If that occurs there’s nothing we can do other than send you back to station and take immediate disciplinary action including termination. Ensure you are adhering to all Safety measures and if you see a yellow light be prepared to STOP.`,
             
             `:truck: *Watch your FOLLOWING DISTANCE Titans!*  
-             You should be AT LEAST 3 van lengths behind the vehicle in front of you.  
-             This can increase depending on road conditions, your speed, and the weather. 
+             You should be AT LEAST 3 van lengths behind the vehicle in front of you. This can increase depending on road conditions, your speed, and the weather. 
 
              :construction: :motorway: :cloud_rain:  
              Even if you are cut off, then you must take defensive action by slowing down. Let off the accelerator and apply the brake if needed to create distance.  
