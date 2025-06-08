@@ -457,6 +457,45 @@ class RocketChatAutomation {
         }
     }
 
+    
+    async sendFridayTimecardReminder() {
+        if (!this.authToken || !this.userId) {
+            if (!(await this.authenticate())) return;
+        }
+        const res = await axios.get(
+            `${this.serverUrl}/api/v1/rooms.info?roomName=general`,
+            { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+        );
+        const roomId = res.data.room._id;
+        const message =
+          `@all *Attention Titans*\n` +
+          `Here's your reminder for you to check and ensure your timecard is accurate.  ` +
+          `If it's not accurate or you missed a timecard punch please send an email to time@infi@dau7.com and follow this format when sending the email:\n\n` +
+          `Date:\nClock in:\nLunch out:\nLunch in:\nClock out:\n\n` +
+          `*DO NOT USE ADP TO CORRECT YOUR TIMECARD THAT FEATURE DOES NOT WORK*`;
+        await this.sendMessage(roomId, message);
+    }
+
+    async sendSaturdayTimecardReminder() {
+        if (!this.authToken || !this.userId) {
+            if (!(await this.authenticate())) return;
+        }
+        const res = await axios.get(
+            `${this.serverUrl}/api/v1/rooms.info?roomName=general`,
+            { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+        );
+        const roomId = res.data.room._id;
+        const message =
+          `@all *Final Reminder*\n` +
+          `Did you remember to check your timecard?  If you haven't now's the time to do so.  ` +
+          `All timecard corrections should be sent in no later than midnight tonight.  ` +
+          `If you need corrections please send an email to time@infi-dau7.com in this format:\n\n` +
+          `Date:\nClock in:\nLunch out:\nLunch in:\nClock out:\n\n` +
+          `*DO NOT USE ADP TO CORRECT YOUR TIMECARD THAT FEATURE DOES NOT WORK*`;
+        await this.sendMessage(roomId, message);
+    }
+
+
     startAutomation() {
         const nowCT = DateTime.now().setZone('America/Chicago').toLocaleString(DateTime.DATETIME_FULL);
         console.log(`🚀 Deployment Time (America/Chicago): ${nowCT}`);
@@ -509,6 +548,32 @@ class RocketChatAutomation {
         );
 
         // Clock-in reminder
+        // Friday 8am reminder to #general
+        this.scheduledFridayTask = cron.schedule(
+            '0 8 * * 5',
+            async () => {
+                try {
+                    await this.sendFridayTimecardReminder();
+                } catch (error) {
+                    console.error('🔥 Error during Friday timecard reminder:', error.message || error);
+                }
+            },
+            { timezone: 'America/Chicago' }
+        );
+
+        // Saturday 5pm reminder to #general
+        this.scheduledSaturdayTask = cron.schedule(
+            '0 17 * * 6',
+            async () => {
+                try {
+                    await this.sendSaturdayTimecardReminder();
+                } catch (error) {
+                    console.error('🔥 Error during Saturday timecard reminder:', error.message || error);
+                }
+            },
+            { timezone: 'America/Chicago' }
+        );
+
         this.scheduledClockInTask = cron.schedule(
             '25 9 * * *',
             async () => {
