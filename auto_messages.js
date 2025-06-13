@@ -470,7 +470,7 @@ class RocketChatAutomation {
         const message =
           `@all *Attention Titans*\n` +
           `Here's your reminder for you to check and ensure your timecard is accurate.  ` +
-          `If it's not accurate or you missed a timecard punch please send an email to time@infi@dau7.com and follow this format when sending the email:\n\n` +
+          `If it's not accurate or you missed a timecard punch please send an email to time@infi-dau7.com and follow this format when sending the email:\n\n` +
           `Date:\nClock in:\nLunch out:\nLunch in:\nClock out:\n\n` +
           `*DO NOT USE ADP TO CORRECT YOUR TIMECARD THAT FEATURE DOES NOT WORK*`;
         await this.sendMessage(roomId, message);
