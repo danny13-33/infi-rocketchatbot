@@ -884,7 +884,7 @@ console.log({
             if (!(await this.authenticate())) return;
         }
 
-        const lunchReminderDate = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
+        const lunchReminderDate230 = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
         const roomName = `daily-${lunchReminderDate}`;
         const res = await axios.get(
             `${this.serverUrl}/api/v1/rooms.info?roomName=${roomName}`,
