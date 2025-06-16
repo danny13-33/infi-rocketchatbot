@@ -166,31 +166,6 @@ class RocketChatAutomation {
         this.messageIndex = 0;
 
         this.loadOrInitState();
-
-    async sendLunch230Reminder() {
-        const lunchReminderDate230 = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
-        if (this.sentMessages[lunchReminderDate230]?.lunch230) return;
-
-        const message = `@all *Attention Titans!*
-Everyone should have started lunch at this time and should be all done by 3pm.  
-
-Lunches are mandatory and must be exactly 30 minutes. ⏳
-➡️ No more, no less.
-❌ You cannot combine lunch with your breaks.
-🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.
-
-Don’t forget to hit that Break button in the Flex app before you dig in! ✅
-
-Enjoy your lunch and recharge! 💪🥗🍔`;
-
-        await this.sendMessage(this.dailyRoom, message);
-
-        if (!this.sentMessages[lunchReminderDate230]) {
-            this.sentMessages[lunchReminderDate230] = {};
-        }
-        this.sentMessages[lunchReminderDate230].lunch230 = true;
-        this.saveSentMessages();
-    }
     }
 
     // Load existing state or initialize a new shuffle for today
@@ -846,6 +821,10 @@ console.log({
         console.error('🔥 Failed to start automation:', err);
     }
 
+        }
+        this.sentMessages[lunchReminderDate230].lunch230 = true;
+        this.saveSentMessages();
+
     async sendLunch230Reminder() {
         const lunchReminderDate230 = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
         if (this.sentMessages[lunchReminderDate230]?.lunch230) return;
@@ -862,12 +841,30 @@ Don’t forget to hit that Break button in the Flex app before you dig in! ✅
 
 Enjoy your lunch and recharge! 💪🥗🍔`;
 
-        await this.sendMessage(this.dailyRoom, message);
+        await this.sendMessage(this.dailyRoomId, message);
+        this.trackSentMessage(lunchReminderDate230, 'lunch230');
+    }
 
-        if (!this.sentMessages[lunchReminderDate230]) {
-            this.sentMessages[lunchReminderDate230] = {};
-        }
+    async sendLunch230Reminder() {
+        const lunchReminderDate230 = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
+        if (this.sentMessages[lunchReminderDate230]?.lunch230) return;
+
+        const message = `@all *Attention Titans!*
+Everyone should have started lunch at this time and should be all done by 3pm.  
+
+Lunches are mandatory and must be exactly 30 minutes. ⏳
+➡️ No more, no less.
+❌ You cannot combine lunch with your breaks.
+🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.
+
+Don’t forget to hit that Break button in the Flex app before you dig in! ✅
+
+Enjoy your lunch and recharge! 💪🥗🍔`;
+
+        await this.sendMessage(this.dailyRoomId, message);
+        this.sentMessages[lunchReminderDate230] = this.sentMessages[lunchReminderDate230] || {};
         this.sentMessages[lunchReminderDate230].lunch230 = true;
         this.saveSentMessages();
+    }
     }
 })();
