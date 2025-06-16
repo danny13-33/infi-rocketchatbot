@@ -507,6 +507,57 @@ class RocketChatAutomation {
         if (!roomId || !this.isRoomForToday(roomName)) return;
 
         const lunchReminderMessage =
+            `@all 🍽️ Titans! It's Lunch Time! 🕒
+
+` +
+            `Just a quick reminder — lunches are mandatory and must be exactly 30 minutes. ⏳
+` +
+            `➡️ No more, no less.
+` +
+            `❌ You cannot combine lunch with your breaks.
+` +
+            `🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.
+
+` +
+            `Don’t forget to hit that Break button in the Flex app before you dig in! ✅
+` +
+            `Enjoy your lunch and recharge! 💪🥗🍔`;
+
+        await this.sendMessage(roomId, lunchReminderMessage);
+    }
+
+    // Follow-up 2:30 PM lunch reminder
+    async sendLunch230ReminderMessage() {
+        if (!this.authToken || !this.userId) {
+            if (!(await this.authenticate())) return;
+        }
+
+        const roomName = this.getCurrentRoomName();
+        const roomId = await this.checkRoomExists(roomName);
+        if (!roomId || !this.isRoomForToday(roomName)) return;
+
+        const followUpMessage =
+            `@all ⏰ Titans — you should have started lunch by now and will be done by 3 PM! 🕒
+
+` +
+            `Remember: lunches are mandatory and exactly 30 minutes. ⏳
+` +
+            `➡️ No more, no less.
+` +
+            `❌ Do not combine lunch with breaks.
+` +
+            `🚗 Travel time counts toward your 30-minute lunch.
+
+` +
+            `Don’t forget to hit that Break button in the Flex app before you eat! ✅`;
+
+        await this.sendMessage(roomId, followUpMessage);
+    }
+const roomName = this.getCurrentRoomName();
+        const roomId = await this.checkRoomExists(roomName);
+        if (!roomId || !this.isRoomForToday(roomName)) return;
+
+        const lunchReminderMessage =
             `@all 🍽️ Titans! It's Lunch Time! 🕒\n\n` +
             `Just a quick reminder — lunches are mandatory and must be exactly 30 minutes. ⏳\n` +
             `➡️ No more, no less.\n` +
@@ -759,6 +810,25 @@ class RocketChatAutomation {
             async () => {
                 try {
                     await this.sendLunchReminderMessage();
+                } catch (error) {
+                    console.error('🔥 Error during scheduled lunch reminder message:', error.message || error);
+                }
+            },
+            { timezone: 'America/Chicago' }
+        );
+
+        // Follow-up lunch reminder at 2:30 PM
+        this.scheduledLunch230Task = cron.schedule(
+            '30 14 * * *',
+            async () => {
+                try {
+                    await this.sendLunch230ReminderMessage();
+                } catch (error) {
+                    console.error('🔥 Error during scheduled 2:30 PM lunch follow-up:', error.message || error);
+                }
+            },
+            { timezone: 'America/Chicago' }
+        );
                 } catch (error) {
                     console.error('🔥 Error during scheduled lunch reminder message:', error.message || error);
                 }
