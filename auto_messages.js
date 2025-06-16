@@ -603,7 +603,7 @@ const roomName = this.getCurrentRoomName();
         const roomId = await this.checkRoomExists(roomName);
         if (!roomId || !this.isRoomForToday(roomName)) return;
 
-        const message = `@all *Attention Titans!*\nLast hour remaining! 💥 Let's push through and complete the delivery day safely! You got this! You got this! 💪`;
+        const message = `@all *Attention Titans!*\nLast hour remaining! 💥 Let's push through and complete the delivery day safely! You got this! 💪`;
         await this.sendMessage(roomId, message);
     }
 
