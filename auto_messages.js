@@ -692,6 +692,12 @@ class RocketChatAutomation {
 
         
         // Lunch reminder
+
+        // 2:30 PM Lunch follow-up reminder
+        cron.schedule('30 14 * * *', () => this.sendLunch230Reminder(), {
+            timezone: 'America/Chicago',
+        });
+
         
         // Countdown delivery reminders
         this.scheduledDeliveryCountdown1130 = cron.schedule('30 11 * * *', async () => {
@@ -820,4 +826,30 @@ console.log({
     } catch (err) {
         console.error('🔥 Failed to start automation:', err);
     }
+
+    async sendLunch230Reminder() {
+        if (!this.authToken || !this.userId) {
+            if (!(await this.authenticate())) return;
+        }
+
+        const today = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
+        const roomName = `daily-${today}`;
+        const res = await axios.get(
+            `${this.serverUrl}/api/v1/rooms.info?roomName=${roomName}`,
+            { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+        );
+        const roomId = res.data.room._id;
+
+        const message = `@all *Attention Titans!*\n` +
+            `Everyone should have started lunch at this time and should be all done by 3pm.\n\n` +
+            `Lunches are mandatory and must be exactly 30 minutes. ⏳\n` +
+            `➡️ No more, no less.\n` +
+            `❌ You cannot combine lunch with your breaks.\n` +
+            `🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.\n\n` +
+            `Don’t forget to hit that Break button in the Flex app before you dig in! ✅\n\n` +
+            `Enjoy your lunch and recharge! 💪🥗🍔`;
+
+        await this.sendMessage(roomId, message);
+    }
+
 })();
