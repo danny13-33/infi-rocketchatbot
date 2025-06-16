@@ -519,6 +519,44 @@ class RocketChatAutomation {
     }
 
 
+    
+    async sendDeliveryCountdownReminder1130() {
+        const roomName = this.getCurrentRoomName();
+        const roomId = await this.checkRoomExists(roomName);
+        if (!roomId || !this.isRoomForToday(roomName)) return;
+
+        const message = `@all *Attention Titans!*\n\nYou have 7 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and ensure you complete all of your deliveries well before 6:30pm in order to avoid breaking our Customers Promise for timely deliveries. You got this! 💪`;
+        await this.sendMessage(roomId, message);
+    }
+
+    async sendDeliveryCountdownReminder1330() {
+        const roomName = this.getCurrentRoomName();
+        const roomId = await this.checkRoomExists(roomName);
+        if (!roomId || !this.isRoomForToday(roomName)) return;
+
+        const message = `@all *Attention Titans!*\n\nYou have 5 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and ensure you complete all of your deliveries well before 6:30pm in order to avoid breaking our Customers Promise for timely deliveries. You got this! 💪`;
+        await this.sendMessage(roomId, message);
+    }
+
+    async sendDeliveryCountdownReminder1530() {
+        const roomName = this.getCurrentRoomName();
+        const roomId = await this.checkRoomExists(roomName);
+        if (!roomId || !this.isRoomForToday(roomName)) return;
+
+        const message = `@all *Attention Titans!*\n\nYou have 3 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and ensure you complete all of your deliveries well before 6:30pm in order to avoid breaking our Customers Promise for timely deliveries. You got this! 💪`;
+        await this.sendMessage(roomId, message);
+    }
+
+    async sendDeliveryCountdownReminder1730() {
+        const roomName = this.getCurrentRoomName();
+        const roomId = await this.checkRoomExists(roomName);
+        if (!roomId || !this.isRoomForToday(roomName)) return;
+
+        const message = `@all *Attention Titans!*\nLast hour remaining! 💥 Let's push through and complete the delivery day safely! You got this! You got this! 💪`;
+        await this.sendMessage(roomId, message);
+    }
+
+
     startAutomation() {
         const nowCT = DateTime.now().setZone('America/Chicago').toLocaleString(DateTime.DATETIME_FULL);
         console.log(`🚀 Deployment Time (America/Chicago): ${nowCT}`);
@@ -599,6 +637,41 @@ class RocketChatAutomation {
 
         
         // Lunch reminder
+        
+        // Countdown delivery reminders
+        this.scheduledDeliveryCountdown1130 = cron.schedule('30 11 * * *', async () => {
+            try {
+                await this.sendDeliveryCountdownReminder1130();
+            } catch (error) {
+                console.error('🔥 Error sending 11:30 reminder:', error.message || error);
+            }
+        }, { timezone: 'America/Chicago' });
+
+        this.scheduledDeliveryCountdown1330 = cron.schedule('30 13 * * *', async () => {
+            try {
+                await this.sendDeliveryCountdownReminder1330();
+            } catch (error) {
+                console.error('🔥 Error sending 1:30 reminder:', error.message || error);
+            }
+        }, { timezone: 'America/Chicago' });
+
+        this.scheduledDeliveryCountdown1530 = cron.schedule('30 15 * * *', async () => {
+            try {
+                await this.sendDeliveryCountdownReminder1530();
+            } catch (error) {
+                console.error('🔥 Error sending 3:30 reminder:', error.message || error);
+            }
+        }, { timezone: 'America/Chicago' });
+
+        this.scheduledDeliveryCountdown1730 = cron.schedule('30 17 * * *', async () => {
+            try {
+                await this.sendDeliveryCountdownReminder1730();
+            } catch (error) {
+                console.error('🔥 Error sending 5:30 reminder:', error.message || error);
+            }
+        }, { timezone: 'America/Chicago' });
+
+
         this.scheduledLunchReminderTask = cron.schedule(
             '0 14 * * *',
             async () => {
