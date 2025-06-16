@@ -557,6 +557,61 @@ class RocketChatAutomation {
     }
 
 
+    
+    async sendImageReminder(imageName) {
+        const roomName = this.getCurrentRoomName();
+        const roomId = await this.checkRoomExists(roomName);
+        if (!roomId || !this.isRoomForToday(roomName)) return;
+
+        const imagePath = path.join(__dirname, 'images', imageName);
+        const imageStream = fs.createReadStream(imagePath);
+        const imageStats = fs.statSync(imagePath);
+
+        const form = new FormData();
+        form.append('file', imageStream, {
+            knownLength: imageStats.size,
+            filename: imageName,
+        });
+        form.append('roomId', roomId);
+
+        try {
+            const result = await axios.post(`${this.serverUrl}/api/v1/rooms.upload`, form, {
+                headers: {
+                    'X-Auth-Token': this.authToken,
+                    'X-User-Id': this.userId,
+                    ...form.getHeaders(),
+                },
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
+            });
+            console.log(`📸 Uploaded ${imageName} to ${roomName}`);
+        } catch (error) {
+            console.error(`❌ Failed to upload ${imageName}:`, error.message || error);
+        }
+    }
+
+    async sendRandomImageReminder() {
+        const images = ['dogs.jpg', 'leadwithsafety.jpg', 'stopsigns.jpg'];
+        const usedToday = this.state.usedImages?.[this.getToday()] || [];
+        const remainingImages = images.filter(img => !usedToday.includes(img));
+
+        if (remainingImages.length === 0) return;
+
+        const chosen = remainingImages[Math.floor(Math.random() * remainingImages.length)];
+        await this.sendImageReminder(chosen);
+
+        // Track that this image has been used today
+        if (!this.state.usedImages) this.state.usedImages = {};
+        if (!this.state.usedImages[this.getToday()]) this.state.usedImages[this.getToday()] = [];
+        this.state.usedImages[this.getToday()].push(chosen);
+        this.saveState();
+    }
+
+    getToday() {
+        return DateTime.now().setZone('America/Chicago').toFormat('yyyy-MM-dd');
+    }
+
+
     startAutomation() {
         const nowCT = DateTime.now().setZone('America/Chicago').toLocaleString(DateTime.DATETIME_FULL);
         console.log(`🚀 Deployment Time (America/Chicago): ${nowCT}`);
@@ -668,6 +723,33 @@ class RocketChatAutomation {
                 await this.sendDeliveryCountdownReminder1730();
             } catch (error) {
                 console.error('🔥 Error sending 5:30 reminder:', error.message || error);
+            }
+        }, { timezone: 'America/Chicago' });
+
+
+        
+        // Scheduled random image uploads to daily room
+        this.scheduledImageUpload1 = cron.schedule('15 10 * * *', async () => {
+            try {
+                await this.sendRandomImageReminder();
+            } catch (error) {
+                console.error('🔥 Error uploading image at 10:15 AM:', error.message || error);
+            }
+        }, { timezone: 'America/Chicago' });
+
+        this.scheduledImageUpload2 = cron.schedule('15 12 * * *', async () => {
+            try {
+                await this.sendRandomImageReminder();
+            } catch (error) {
+                console.error('🔥 Error uploading image at 12:15 PM:', error.message || error);
+            }
+        }, { timezone: 'America/Chicago' });
+
+        this.scheduledImageUpload3 = cron.schedule('15 15 * * *', async () => {
+            try {
+                await this.sendRandomImageReminder();
+            } catch (error) {
+                console.error('🔥 Error uploading image at 3:15 PM:', error.message || error);
             }
         }, { timezone: 'America/Chicago' });
 
