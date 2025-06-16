@@ -838,8 +838,8 @@ console.log({
     }
 
 
-        const today = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
-        const roomName = `daily-${today}`;
+        const lunchReminderDate = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
+        const roomName = `daily-${lunchReminderDate}`;
         const res = await axios.get(
             `${this.serverUrl}/api/v1/rooms.info?roomName=${roomName}`,
             { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
@@ -858,8 +858,8 @@ console.log({
         await this.sendMessage(roomId, message);
 
 
-        const today = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
-        const roomName = `daily-${today}`;
+        const lunchReminderDate = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
+        const roomName = `daily-${lunchReminderDate}`;
         const res = await axios.get(
             `${this.serverUrl}/api/v1/rooms.info?roomName=${roomName}`,
             { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
@@ -884,8 +884,8 @@ console.log({
             if (!(await this.authenticate())) return;
         }
 
-        const today = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
-        const roomName = `daily-${today}`;
+        const lunchReminderDate = DateTime.local().setZone('America/Chicago').toFormat('yyyy-LL-dd');
+        const roomName = `daily-${lunchReminderDate}`;
         const res = await axios.get(
             `${this.serverUrl}/api/v1/rooms.info?roomName=${roomName}`,
             { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
