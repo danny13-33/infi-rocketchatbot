@@ -458,44 +458,65 @@ class RocketChatAutomation {
         }
     }
 
-    // Test image upload directly into Danny’s DM
-    async sendImmediateImageToDanny(imageName) {
-        if (!this.authToken || !this.userId) {
-          if (!(await this.authenticate())) return;
-        }
-    
-        // get or create the DM room
-        const dannyRoomId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
-        if (!dannyRoomId) return;
-    
-        // build the form
-        const imagePath = path.join(__dirname, 'images', imageName);
-        const imageStream = fs.createReadStream(imagePath);
-        const stats = fs.statSync(imagePath);
-        const form = new FormData();
-        form.append('file', imageStream, { knownLength: stats.size, filename: imageName });
-        form.append('rid', dannyRoomId);
-    
-        // upload via the IM endpoint
-        try {
-          await axios.post(
-            `${this.serverUrl}/api/v1/im.upload`,
-            form,
-            {
-              headers: {
-                'X-Auth-Token': this.authToken,
-                'X-User-Id': this.userId,
-                ...form.getHeaders(),
-              },
-              maxContentLength: Infinity,
-              maxBodyLength: Infinity,
-            }
-          );
-          console.log(`✅ Test image "${imageName}" sent to Danny`);
-        } catch (err) {
-          console.error('❌ Failed to upload test image to Danny:', err.response?.data || err.message);
-        }
+  // Test image upload directly into Danny’s DM (with a rooms.upload fallback)
+  async sendImmediateImageToDanny(imageName) {
+    // ensure we’re authenticated
+    if (!this.authToken || !this.userId) {
+      if (!(await this.authenticate())) return;
+    }
+
+    // get or create Danny’s DM room
+    const dannyRoomId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
+    if (!dannyRoomId) return;
+
+    // build our multipart form
+    const imagePath = path.join(__dirname, 'images', imageName);
+    const stats = fs.statSync(imagePath);
+    const imageStream = fs.createReadStream(imagePath);
+    const form = new FormData();
+    form.append('file', imageStream, { knownLength: stats.size, filename: imageName });
+    form.append('rid', dannyRoomId);
+
+    // helper to swap between rid & roomId
+    const doUpload = async (endpoint, useRoomId) => {
+      if (useRoomId) {
+        form.delete('rid');
+        form.append('roomId', dannyRoomId);
       }
+      return axios.post(
+        `${this.serverUrl}/api/v1/${endpoint}`,
+        form,
+        {
+          headers: {
+            'X-Auth-Token': this.authToken,
+            'X-User-Id': this.userId,
+            ...form.getHeaders(),
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        }
+      );
+    };
+
+    // try im.upload, fallback on 405 to rooms.upload
+    try {
+      await doUpload('im.upload', false);
+      console.log(`✅ Image "${imageName}" sent to Danny via im.upload`);
+    } catch (err) {
+      if (err.response?.status === 405) {
+        console.warn('⚠️ im.upload not allowed, falling back to rooms.upload');
+        try {
+          await doUpload('rooms.upload', true);
+          console.log(`✅ Image "${imageName}" sent to Danny via rooms.upload`);
+        } catch (inner) {
+          console.error('❌ rooms.upload fallback failed:', inner.response?.data || inner.message);
+        }
+      } else {
+        console.error('❌ Failed to upload image to Danny:', err.response?.data || err.message);
+      }
+    }
+  }
+
 
     
     async sendFridayTimecardReminder() {
