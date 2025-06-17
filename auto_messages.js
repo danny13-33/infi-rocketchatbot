@@ -479,7 +479,7 @@ class RocketChatAutomation {
     // upload via the IM endpoint
     try {
         await axios.post(
-            `${this.serverUrl}/api/v1/rooms.upload`,
+            `${this.serverUrl}/api/v1/im.upload`,
             form,
             {
                 headers: {
