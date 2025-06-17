@@ -479,7 +479,7 @@ class RocketChatAutomation {
     // upload via the IM endpoint
     try {
         await axios.post(
-            `${this.serverUrl}/api/v1/im.upload`,
+            `${this.serverUrl}/api/v1/rooms.upload`,
             form,
             {
                 headers: {
@@ -694,12 +694,15 @@ class RocketChatAutomation {
             async () => {
                 try {
                     await this.sendLunch230ReminderMessage();
-                    } catch (error) {
-                        console.error('🔥 Error during scheduled 2:30 PM lunch reminder:', error.message || error);
-            }
-        },
-        { timezone: 'America/Chicago' }
-    );
+                } catch (error) {
+                  console.error(
+                  '🔥 Error during scheduled 2:30 PM lunch reminder:',
+                  error.message || error
+            );
+        }
+    },
+    { timezone: 'America/Chicago' }
+  );
   
 
         // Safety reminders
