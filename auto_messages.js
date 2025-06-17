@@ -4,6 +4,7 @@ const cron = require('node-cron');
 const { DateTime } = require('luxon');
 const fs = require('fs');
 const path = require('path');
+const FormData = require('form-data');
 
 const STATE_PATH = path.join(__dirname, 'state.json');
 
