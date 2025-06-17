@@ -462,40 +462,34 @@ class RocketChatAutomation {
     async sendImmediateImageToDanny(imageName) {
         if (!this.authToken || !this.userId) {
             if (!(await this.authenticate())) return;
-    }
-    
-    // get or create the DM room
+        }
         const dannyRoomId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
         if (!dannyRoomId) return;
-
-    // build the form
         const imagePath = path.join(__dirname, 'images', imageName);
         const imageStream = fs.createReadStream(imagePath);
         const stats = fs.statSync(imagePath);
         const form = new FormData();
         form.append('file', imageStream, { knownLength: stats.size, filename: imageName });
         form.append('roomId', dannyRoomId);
-
-    // upload via the IM endpoint
-    try {
-        await axios.post(
-            `${this.serverUrl}/api/v1/rooms.upload`,
-            form,
-            {
-                headers: {
-                    'X-Auth-Token': this.authToken,
-                    'X-User-Id': this.userId,
-                    ...form.getHeaders(),
-                },
-                maxContentLength: Infinity,
-                maxBodyLength: Infinity,
-            }
-        );
-        console.log(`✅ Test image "${imageName}" sent to Danny`);
-    } catch (err) {
-        console.error('❌ Failed to upload test image to Danny:', err.response?.data || err.message);
+        try {
+            await axios.post(
+                `${this.serverUrl}/api/v1/rooms.upload`,
+                form,
+                {
+                    headers: {
+                        'X-Auth-Token': this.authToken,
+                        'X-User-Id': this.userId,
+                        ...form.getHeaders(),
+                    },
+                    maxContentLength: Infinity,
+                    maxBodyLength: Infinity,
+                }
+            );
+            console.log(`✅ Test image "${imageName}" sent to Danny`);
+        } catch (err) {
+            console.error('❌ Failed to upload test image to Danny:', err.response?.data || err.message);
+        }
     }
-}
 
     
     async sendFridayTimecardReminder() {
