@@ -468,29 +468,26 @@ class RocketChatAutomation {
         const dannyRoomId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
         if (!dannyRoomId) return;
 
-    // build the form
-        const imagePath = path.join(__dirname, 'images', imageName);
-        const imageStream = fs.createReadStream(imagePath);
-        const stats = fs.statSync(imagePath);
-        const form = new FormData();
-        form.append('file', imageStream, { knownLength: stats.size, filename: imageName });
-        form.append('roomId', dannyRoomId);
+     // build the form
+     const form = new FormData();
+     form.append('file', imageStream, { knownLength: stats.size, filename: imageName });
 
-    // upload via the IM endpoint
-    try {
-        await axios.post(
-            `${this.serverUrl}/api/v1/rooms.upload`,
-            form,
-            {
-                headers: {
-                    'X-Auth-Token': this.authToken,
-                    'X-User-Id': this.userId,
-                    ...form.getHeaders(),
-                },
-                maxContentLength: Infinity,
-                maxBodyLength: Infinity,
-            }
-        );
+     // upload via the IM endpoint (roomId in URL)
+     await axios.post(
+
+      `${this.serverUrl}/api/v1/rooms.upload/${encodeURIComponent(dannyRoomId)}`,
+      form,
+      {
+        headers: {
+          'X-Auth-Token': this.authToken,
+          'X-User-Id': this.userId,
+          ...form.getHeaders(),
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      }
+    );
+
         console.log(`✅ Test image "${imageName}" sent to Danny`);
     } catch (err) {
         console.error('❌ Failed to upload test image to Danny:', err.response?.data || err.message);
