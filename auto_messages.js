@@ -158,7 +158,20 @@ class RocketChatAutomation {
 
              Also, avoid parking on driveways. If you can see the front door from the street, there’s no need to pull into someone’s property. 🏠
              
-             Let’s stay safe and smart out there!`
+             Let’s stay safe and smart out there!`,
+
+             '@all *READ THE DELIVERY NOTES*\n' +
+             'Your customer feedback score is affected by this.\n' +
+             'If the notes say to leave in a specific spot, then do so.\n' +
+             'Complete contact compliance, mark the package appropriately, and move on if you cannot follow the notes for any reason.\n' +
+             '📦 📋 👀',
+
+             '📸 *Take Quality Photos* 📸\n' +
+             'All of your photos are screened and are either rejected or accepted by Amazon. Take your time to make sure you are taking clear photos of the package. Get with your management team with any questions on how to improve your POD (Picture on Delivery) metric.\n\n' +
+             '• Do not take pictures of delivery drop-off boxes; take a clear picture of the packages instead.\n' +
+             '• Do not take a picture of a package behind a fence.\n' +
+             '• If you can’t get a clear picture, move the package(s) to somewhere you can, then complete the delivery to the requested area.\n\n' +
+             'It is important that you swipe to finish the delivery at the location of the POD. Try to include anything recognizable (door number, unit number, doormat, etc.) in the picture to help combat negative customer feedback.'
         ];
 
         // Persisted state: { date: "YYYY-MM-DD", order: [shuffled indices], index: integer }
@@ -460,54 +473,51 @@ class RocketChatAutomation {
 
   // Test image upload directly into Danny’s DM (with a rooms.upload fallback)
   async sendImmediateImageToDanny(imageName) {
-    // ensure we’re authenticated
     if (!this.authToken || !this.userId) {
       if (!(await this.authenticate())) return;
     }
-
-    // get or create Danny’s DM room
+  
     const dannyRoomId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
     if (!dannyRoomId) return;
-
-    // build our multipart form
+  
     const imagePath = path.join(__dirname, 'images', imageName);
     const stats = fs.statSync(imagePath);
     const imageStream = fs.createReadStream(imagePath);
-    const form = new FormData();
-    form.append('file', imageStream, { knownLength: stats.size, filename: imageName });
-    form.append('rid', dannyRoomId);
-
-    // helper to swap between rid & roomId
-    const doUpload = async (endpoint, useRoomId) => {
-      if (useRoomId) {
-        form.delete('rid');
-        form.append('roomId', dannyRoomId);
-      }
-      return axios.post(
+  
+    // Build two separate forms
+    const formIm = new FormData();
+    formIm.append('file', imageStream, { knownLength: stats.size, filename: imageName });
+    formIm.append('rid', dannyRoomId);
+  
+    const formRooms = new FormData();
+    formRooms.append('file', fs.createReadStream(imagePath), { knownLength: stats.size, filename: imageName });
+    formRooms.append('roomId', dannyRoomId);
+  
+    // Helper to post one or the other
+    const postForm = (endpoint, form) =>
+      axios.post(
         `${this.serverUrl}/api/v1/${endpoint}`,
         form,
         {
           headers: {
             'X-Auth-Token': this.authToken,
             'X-User-Id': this.userId,
-            ...form.getHeaders(),
+            ...form.getHeaders()
           },
           maxContentLength: Infinity,
-          maxBodyLength: Infinity,
+          maxBodyLength: Infinity
         }
       );
-    };
-
-    // try im.upload, fallback on 405 to rooms.upload
+  
     try {
-      await doUpload('im.upload', false);
-      console.log(`✅ Image "${imageName}" sent to Danny via im.upload`);
+      await postForm('im.upload', formIm);
+      console.log(`✅ Image "${imageName}" sent via im.upload`);
     } catch (err) {
       if (err.response?.status === 405) {
         console.warn('⚠️ im.upload not allowed, falling back to rooms.upload');
         try {
-          await doUpload('rooms.upload', true);
-          console.log(`✅ Image "${imageName}" sent to Danny via rooms.upload`);
+          await postForm('rooms.upload', formRooms);
+          console.log(`✅ Image "${imageName}" sent via rooms.upload`);
         } catch (inner) {
           console.error('❌ rooms.upload fallback failed:', inner.response?.data || inner.message);
         }
@@ -516,6 +526,7 @@ class RocketChatAutomation {
       }
     }
   }
+  
 
 
     
