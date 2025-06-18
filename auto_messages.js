@@ -516,7 +516,7 @@ class RocketChatAutomation {
         const postForm = (endpoint, form) =>
             axios.post(
                 `${this.serverUrl}/api/v1/${endpoint}`,
-                form,
+                form, 
                 {
                     headers: {
                         'X-Auth-Token': this.authToken,
