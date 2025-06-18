@@ -491,7 +491,7 @@ class RocketChatAutomation {
   
     const formRooms = new FormData();
     formRooms.append('file', fs.createReadStream(imagePath), { knownLength: stats.size, filename: imageName });
-    formRooms.append('roomId', dannyRoomId);
+    formRooms.append('rid', dannyRoomId);
   
     // Helper to post one or the other
     const postForm = (endpoint, form) =>
