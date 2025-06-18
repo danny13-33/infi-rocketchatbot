@@ -1,24 +1,5 @@
 require('dotenv').config();
 const axios = require('axios');
-// Debug *all* requests & responses
-axios.interceptors.request.use(cfg => {
-    console.debug(`→ [${cfg.method.toUpperCase()}] ${cfg.url}`, cfg.headers, cfg.data);
-    return cfg;
-  });
-  axios.interceptors.response.use(
-    res => {
-      console.debug(`← [${res.status}] ${res.config.url}`, res.headers, res.data);
-      return res;
-    },
-    err => {
-      if (err.response) {
-        console.error(`← [${err.response.status}] ${err.config.url}`, err.response.headers, err.response.data);
-      } else {
-        console.error('← [no response]', err.message);
-      }
-      return Promise.reject(err);
-    }
-  );
 const cron = require('node-cron');
 const { DateTime } = require('luxon');
 const fs = require('fs');
@@ -503,19 +484,17 @@ class RocketChatAutomation {
         const imageStream = fs.createReadStream(imagePath);
 
         // build two forms
-        // im.upload
         const formIm = new FormData();
         formIm.append('file', imageStream, { knownLength: stats.size, filename: imageName });
-        formIm.append('rid', dannyRoomId);           // ← note the key is “rid”
+        formIm.append('rid', dannyRoomId);
 
-        // rooms.upload
         const formRooms = new FormData();
         formRooms.append('file', fs.createReadStream(imagePath), { knownLength: stats.size, filename: imageName });
-        formRooms.append('roomId', dannyRoomId);      // ← this one stays “roomId”
+        formRooms.append('rid', dannyRoomId);
 
         const postForm = (endpoint, form) =>
             axios.post(
-                `${this.serverUrl}/api/v1/${endpoint}`, 
+                `${this.serverUrl}/api/v1/${endpoint}`,
                 form,
                 {
                     headers: {
@@ -525,21 +504,38 @@ class RocketChatAutomation {
                     },
                     maxContentLength: Infinity,
                     maxBodyLength: Infinity
-                } 
+                }
             );
 
-            try {
-                await postForm('im.upload', formIm);
-                console.log(`✅ Image "${imageName}" sent via im.upload`);
-            } catch (err) {
-                if (err.response?.status === 405) {
-                    // fallback logic…
-                } else {
-                    console.error('❌ Failed to upload image to Danny:', err.response?.data || err.message);
+        try {
+            await postForm('im.upload', formIm);
+            console.log(`✅ Image "${imageName}" sent via im.upload`);
+        } catch (err) {
+            if (err.response?.status === 405) {
+                console.warn('⚠️ im.upload not allowed, falling back to rooms.upload');
+                // log form field names
+                console.log('Form fields for rooms.upload:', Object.keys(formRooms));
+                try {
+                    await postForm('rooms.upload', formRooms);
+                    console.log(`✅ Image "${imageName}" sent via rooms.upload`);
+                } catch (inner) {
+                    console.error('🚨 rooms.upload fallback failed');
+                    if (inner.response) {
+                        console.error('Status:', inner.response.status);
+                        console.error('Headers:', inner.response.headers);
+                        console.error('Body:', inner.response.data);
+                    } else {
+                        console.error('Error:', inner.stack || inner.message);
+                    }
                 }
+            } else {
+                console.error('❌ Failed to upload image to Danny:', err.response?.data || err.message);
             }
-            } // <-- CLOSE sendImmediateImageToDanny  
+        }
+    }
   
+
+
     
     async sendFridayTimecardReminder() {
         if (!this.authToken || !this.userId) {
@@ -666,38 +662,35 @@ class RocketChatAutomation {
     
     async sendImageReminder(imageName) {
         const roomName = this.getCurrentRoomName();
-        const roomId   = await this.checkRoomExists(roomName);
+        const roomId = await this.checkRoomExists(roomName);
         if (!roomId || !this.isRoomForToday(roomName)) return;
-      
+
         const imagePath = path.join(__dirname, 'images', imageName);
-        const stats     = fs.statSync(imagePath);
-        const stream    = fs.createReadStream(imagePath);
-      
+        const imageStream = fs.createReadStream(imagePath);
+        const imageStats = fs.statSync(imagePath);
+
         const form = new FormData();
-        // ⚠️ Use "rid" (not "roomId") when calling rooms.media
-        form.append('file', stream, { knownLength: stats.size, filename: imageName });
-        form.append('rid', roomId);
-      
+        form.append('file', imageStream, {
+            knownLength: imageStats.size,
+            filename: imageName,
+        });
+        form.append('roomId', roomId);
+
         try {
-          await axios.post(
-            `${this.serverUrl}/api/v1/rooms.media/${roomId}`,
-            form,
-            {
-              headers: {
-                'X-Auth-Token': this.authToken,
-                'X-User-Id':    this.userId,
-                ...form.getHeaders()
-              },
-              maxContentLength: Infinity,
-              maxBodyLength:    Infinity
-            }
-          );
-          console.log(`📸 Uploaded ${imageName} to ${roomName}`);
-        } catch (err) {
-          console.error(`❌ Failed to upload ${imageName}:`, err.response?.data || err.message);
+            const result = await axios.post(`${this.serverUrl}/api/v1/rooms.upload`, form, {
+                headers: {
+                    'X-Auth-Token': this.authToken,
+                    'X-User-Id': this.userId,
+                    ...form.getHeaders(),
+                },
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
+            });
+            console.log(`📸 Uploaded ${imageName} to ${roomName}`);
+        } catch (error) {
+            console.error(`❌ Failed to upload ${imageName}:`, error.message || error);
         }
-      }
-      
+    }
 
     async sendRandomImageReminder() {
         const images = ['dogs.jpg', 'leadwithsafety.jpg', 'stopsigns.jpg'];
