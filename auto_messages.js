@@ -515,7 +515,7 @@ class RocketChatAutomation {
 
         const postForm = (endpoint, form) =>
             axios.post(
-                `${this.serverUrl}/api/v1/${endpoint}`,
+                `${this.serverUrl}/api/v1/${endpoint}`, 
                 form,
                 {
                     headers: {
