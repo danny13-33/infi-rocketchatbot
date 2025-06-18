@@ -531,35 +531,15 @@ class RocketChatAutomation {
             try {
                 await postForm('im.upload', formIm);
                 console.log(`✅ Image "${imageName}" sent via im.upload`);
-              } catch (err) {
+            } catch (err) {
                 if (err.response?.status === 405) {
-                  console.warn('⚠️ im.upload not allowed, falling back to rooms.media');
-              
-                  // re-create the form (so the stream isn’t already consumed)
-                  const fallbackForm = new FormData();
-                  fallbackForm.append('file', fs.createReadStream(path.join(__dirname, 'images', imageName)), { 
-                    knownLength: stats.size,
-                    filename: imageName
-                  });
-                  fallbackForm.append('rid', dannyRoomId);
-              
-                  try {
-                    await postForm(`rooms.media/${dannyRoomId}`, fallbackForm);
-                    console.log(`✅ Image "${imageName}" sent via rooms.media`);
-                  } catch (inner) {
-                    console.error('🚨 rooms.media fallback failed');
-                    console.error('Status:', inner.response?.status);
-                    console.error('Body:',   inner.response?.data);
-                  }
-              
+                    // fallback logic…
                 } else {
-                  console.error('❌ Failed to upload image to Danny:', err.response?.data || err.message);
+                    console.error('❌ Failed to upload image to Danny:', err.response?.data || err.message);
                 }
-              }
-    }  
+            }
+            } // <-- CLOSE sendImmediateImageToDanny  
   
-
-
     
     async sendFridayTimecardReminder() {
         if (!this.authToken || !this.userId) {
