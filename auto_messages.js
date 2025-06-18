@@ -537,7 +537,7 @@ class RocketChatAutomation {
               
                   // re-create the form (so the stream isn’t already consumed)
                   const fallbackForm = new FormData();
-                  fallbackForm.append('file', fs.createReadStream(path.join(__dirname, 'images', imageName)), {
+                  fallbackForm.append('file', fs.createReadStream(path.join(__dirname, 'images', imageName)), { 
                     knownLength: stats.size,
                     filename: imageName
                   });
