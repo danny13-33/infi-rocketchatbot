@@ -503,13 +503,15 @@ class RocketChatAutomation {
         const imageStream = fs.createReadStream(imagePath);
 
         // build two forms
+        // im.upload
         const formIm = new FormData();
         formIm.append('file', imageStream, { knownLength: stats.size, filename: imageName });
-        formIm.append('rid', dannyRoomId);
+        formIm.append('rid', dannyRoomId);           // ← note the key is “rid”
 
+        // rooms.upload
         const formRooms = new FormData();
         formRooms.append('file', fs.createReadStream(imagePath), { knownLength: stats.size, filename: imageName });
-        formRooms.append('roomId', dannyRoomId);
+        formRooms.append('roomId', dannyRoomId);      // ← this one stays “roomId”
 
         const postForm = (endpoint, form) =>
             axios.post(
