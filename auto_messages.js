@@ -1,17 +1,18 @@
 require('dotenv').config();
 const axios = require('axios');
+// Debug *all* requests & responses
 axios.interceptors.request.use(cfg => {
-    console.debug(`→ [${cfg.method.toUpperCase()}] ${cfg.url}`, cfg.data || '');
+    console.debug(`→ [${cfg.method.toUpperCase()}] ${cfg.url}`, cfg.headers, cfg.data);
     return cfg;
   });
   axios.interceptors.response.use(
     res => {
-      console.debug(`← [${res.status}] ${res.config.url}`, res.data);
+      console.debug(`← [${res.status}] ${res.config.url}`, res.headers, res.data);
       return res;
     },
     err => {
       if (err.response) {
-        console.error(`← [${err.response.status}] ${err.config.url}`, err.response.data);
+        console.error(`← [${err.response.status}] ${err.config.url}`, err.response.headers, err.response.data);
       } else {
         console.error('← [no response]', err.message);
       }
@@ -504,11 +505,11 @@ class RocketChatAutomation {
         // build two forms
         const formIm = new FormData();
         formIm.append('file', imageStream, { knownLength: stats.size, filename: imageName });
-        formIm.append('rid', dannyRoomId);
+        formIm.append('roomId', dannyRoomId);
 
         const formRooms = new FormData();
         formRooms.append('file', fs.createReadStream(imagePath), { knownLength: stats.size, filename: imageName });
-        formRooms.append('rid', dannyRoomId);
+        formRooms.append('roomId', dannyRoomId);
 
         const postForm = (endpoint, form) =>
             axios.post(
