@@ -525,7 +525,7 @@ class RocketChatAutomation {
                     },
                     maxContentLength: Infinity,
                     maxBodyLength: Infinity
-                }
+                } 
             );
 
         try {
