@@ -529,7 +529,7 @@ class RocketChatAutomation {
             );
 
         try {
-            await postForm('im.upload', formIm);
+            await postForm('im.upload', formIm); 
             console.log(`✅ Image "${imageName}" sent via im.upload`);
         } catch (err) {
             if (err.response?.status === 405) {
