@@ -524,7 +524,7 @@ class RocketChatAutomation {
                         ...form.getHeaders()
                     },
                     maxContentLength: Infinity,
-                    maxBodyLength: Infinity
+                    maxBodyLength: Infinity 
                 } 
             );
 
