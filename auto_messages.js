@@ -505,7 +505,7 @@ class RocketChatAutomation {
         // build two forms
         const formIm = new FormData();
         formIm.append('file', imageStream, { knownLength: stats.size, filename: imageName });
-        formIm.append('roomId', dannyRoomId);
+        formIm.append('rid', dannyRoomId);
 
         const formRooms = new FormData();
         formRooms.append('file', fs.createReadStream(imagePath), { knownLength: stats.size, filename: imageName });
