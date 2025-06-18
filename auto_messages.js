@@ -556,7 +556,7 @@ class RocketChatAutomation {
                   console.error('❌ Failed to upload image to Danny:', err.response?.data || err.message);
                 }
               }
-              
+    }  
   
 
 
