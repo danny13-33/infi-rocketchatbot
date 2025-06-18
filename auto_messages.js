@@ -528,32 +528,35 @@ class RocketChatAutomation {
                 } 
             );
 
-        try {
-            await postForm('im.upload', formIm); 
-            console.log(`✅ Image "${imageName}" sent via im.upload`);
-        } catch (err) {
-            if (err.response?.status === 405) {
-                console.warn('⚠️ im.upload not allowed, falling back to rooms.upload');
-                // log form field names
-                console.log('Form fields for rooms.upload:', formRooms.getHeaders());
-                try {
-                    await postForm('rooms.upload', formRooms);
-                    console.log(`✅ Image "${imageName}" sent via rooms.upload`);
-                } catch (inner) {
-                    console.error('🚨 rooms.upload fallback failed');
-                    if (inner.response) {
-                        console.error('Status:', inner.response.status);
-                        console.error('Headers:', inner.response.headers);
-                        console.error('Body:', inner.response.data);
-                    } else {
-                        console.error('Error:', inner.stack || inner.message);
-                    }
+            try {
+                await postForm('im.upload', formIm);
+                console.log(`✅ Image "${imageName}" sent via im.upload`);
+              } catch (err) {
+                if (err.response?.status === 405) {
+                  console.warn('⚠️ im.upload not allowed, falling back to rooms.media');
+              
+                  // re-create the form (so the stream isn’t already consumed)
+                  const fallbackForm = new FormData();
+                  fallbackForm.append('file', fs.createReadStream(path.join(__dirname, 'images', imageName)), {
+                    knownLength: stats.size,
+                    filename: imageName
+                  });
+                  fallbackForm.append('rid', dannyRoomId);
+              
+                  try {
+                    await postForm(`rooms.media/${dannyRoomId}`, fallbackForm);
+                    console.log(`✅ Image "${imageName}" sent via rooms.media`);
+                  } catch (inner) {
+                    console.error('🚨 rooms.media fallback failed');
+                    console.error('Status:', inner.response?.status);
+                    console.error('Body:',   inner.response?.data);
+                  }
+              
+                } else {
+                  console.error('❌ Failed to upload image to Danny:', err.response?.data || err.message);
                 }
-            } else {
-                console.error('❌ Failed to upload image to Danny:', err.response?.data || err.message);
-            }
-        }
-    }
+              }
+              
   
 
 
@@ -683,35 +686,38 @@ class RocketChatAutomation {
     
     async sendImageReminder(imageName) {
         const roomName = this.getCurrentRoomName();
-        const roomId = await this.checkRoomExists(roomName);
+        const roomId   = await this.checkRoomExists(roomName);
         if (!roomId || !this.isRoomForToday(roomName)) return;
-
+      
         const imagePath = path.join(__dirname, 'images', imageName);
-        const imageStream = fs.createReadStream(imagePath);
-        const imageStats = fs.statSync(imagePath);
-
+        const stats     = fs.statSync(imagePath);
+        const stream    = fs.createReadStream(imagePath);
+      
         const form = new FormData();
-        form.append('file', imageStream, {
-            knownLength: imageStats.size,
-            filename: imageName,
-        });
-        form.append('roomId', roomId);
-
+        // ⚠️ Use "rid" (not "roomId") when calling rooms.media
+        form.append('file', stream, { knownLength: stats.size, filename: imageName });
+        form.append('rid', roomId);
+      
         try {
-            const result = await axios.post(`${this.serverUrl}/api/v1/rooms.upload`, form, {
-                headers: {
-                    'X-Auth-Token': this.authToken,
-                    'X-User-Id': this.userId,
-                    ...form.getHeaders(),
-                },
-                maxContentLength: Infinity,
-                maxBodyLength: Infinity,
-            });
-            console.log(`📸 Uploaded ${imageName} to ${roomName}`);
-        } catch (error) {
-            console.error(`❌ Failed to upload ${imageName}:`, error.message || error);
+          await axios.post(
+            `${this.serverUrl}/api/v1/rooms.media/${roomId}`,
+            form,
+            {
+              headers: {
+                'X-Auth-Token': this.authToken,
+                'X-User-Id':    this.userId,
+                ...form.getHeaders()
+              },
+              maxContentLength: Infinity,
+              maxBodyLength:    Infinity
+            }
+          );
+          console.log(`📸 Uploaded ${imageName} to ${roomName}`);
+        } catch (err) {
+          console.error(`❌ Failed to upload ${imageName}:`, err.response?.data || err.message);
         }
-    }
+      }
+      
 
     async sendRandomImageReminder() {
         const images = ['dogs.jpg', 'leadwithsafety.jpg', 'stopsigns.jpg'];
