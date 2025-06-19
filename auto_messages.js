@@ -432,6 +432,25 @@ class RocketChatAutomation {
         await this.sendMessage(roomId, clockInMessage);
     }
 
+    async sendFirstBreakReminderMessage() {
+        if (!this.authToken || !this.userId) {
+            if (!(await this.authenticate())) return;
+        }
+        const roomName = this.getCurrentRoomName();
+        const roomId = await this.checkRoomExists(roomName);
+        if (!roomId || !this.isRoomForToday(roomName)) return;
+    
+        const message = `@all 🚨*Reminder: First Stop = First Break* 🚨
+    Titans, if you stop before your first delivery — whether it is for the restroom, food, or drinks — that will count as your first 15-minute break.
+    
+    🕒 Be prepared when you leave the station so you can stay on schedule. If you must make an unplanned stop, let Dispatch know immediately.
+    
+    Being late to your first delivery puts your whole route behind. Plan ahead and stay on track!`;
+    
+        await this.sendMessage(roomId, message);
+    }
+        
+
     async getOrCreateDirectMessageRoom(username) {
         try {
             const res = await axios.post(
@@ -723,7 +742,19 @@ async sendImmediateImageToDanny(imageName) {
     { timezone: 'America/Chicago' }
   );
   
-
+        // First‐stop reminder at 10:15 AM CT every day
+        this.scheduledFirstBreakReminderTask = cron.schedule(
+            '15 10 * * *',
+            async () => {
+                try {
+                    await this.sendFirstBreakReminderMessage();
+                } catch (error) {
+                    console.error('🔥 Error during scheduled first‐stop reminder:', error.message || error);
+      }
+    },
+    { timezone: 'America/Chicago' }
+  );
+  
         // Safety reminders
         this.scheduledSafetyTask = cron.schedule(
             '0,30 10-19 * * *',
