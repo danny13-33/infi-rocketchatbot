@@ -172,6 +172,19 @@ class RocketChatAutomation {
              '• Do not take a picture of a package behind a fence.\n' +
              '• If you can’t get a clear picture, move the package(s) to somewhere you can, then complete the delivery to the requested area.\n\n' +
              'It is important that you swipe to finish the delivery at the location of the POD. Try to include anything recognizable (door number, unit number, doormat, etc.) in the picture to help combat negative customer feedback.'
+
+             `🚨 *Reminder Titans!* 🚨
+
+              Amazon is now treating rolling stops the same as running red lights. That means:
+
+              🛑 Rolling through a stop sign = 🚦 Running a red light  
+              ➡️ Route paused  
+              ➡️ Driver account suspended
+
+              Each violation requires us to take disciplinary action, and having a driver account suspended mid-route creates extra stress for the whole team.
+
+              Keep it safe and simple — always make a complete stop at every stop sign. Let’s look out for each other and stay compliant. 💪`,
+
         ];
 
         // Persisted state: { date: "YYYY-MM-DD", order: [shuffled indices], index: integer }
@@ -589,7 +602,9 @@ async sendImmediateImageToDanny(imageName) {
             `Just a quick reminder — lunches are mandatory and must be exactly 30 minutes. ⏳\n` +
             `➡️ No more, no less.\n` +
             `❌ You cannot combine lunch with your breaks.\n` +
-            `🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.\n\n` +
+            `🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.\n` +
+            '🕑 The earliest you can clock out for lunch is 2:00 PM\n' +  
+            '🕝 The latest you can clock out for lunch is 2:30 PM\n\n' +  
             `Don’t forget to hit that Break button in the Flex app before you dig in! ✅\n` +
             `Enjoy your lunch and recharge! 💪🥗🍔`;
 
@@ -611,7 +626,9 @@ async sendImmediateImageToDanny(imageName) {
             `Lunches are mandatory and must be exactly 30 minutes. ⏳\n` +
             `➡️ No more, no less.\n` +
             `❌ You cannot combine lunch with your breaks.\n` +
-            `🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.\n\n` +
+            `🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.\n` +
+            '🕑 The earliest you can clock out for lunch is 2:00 PM\n' +  
+            '🕝 The latest you can clock out for lunch is 2:30 PM\n\n' +
             `Don’t forget to hit that Break button in the Flex app before you dig in! ✅\n\n` +
             `Enjoy your lunch and recharge! 💪🥗🍔`;
     
