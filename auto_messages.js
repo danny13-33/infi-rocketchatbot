@@ -171,7 +171,7 @@ class RocketChatAutomation {
              '• Do not take pictures of delivery drop-off boxes; take a clear picture of the packages instead.\n' +
              '• Do not take a picture of a package behind a fence.\n' +
              '• If you can’t get a clear picture, move the package(s) to somewhere you can, then complete the delivery to the requested area.\n\n' +
-             'It is important that you swipe to finish the delivery at the location of the POD. Try to include anything recognizable (door number, unit number, doormat, etc.) in the picture to help combat negative customer feedback.'
+             'It is important that you swipe to finish the delivery at the location of the POD. Try to include anything recognizable (door number, unit number, doormat, etc.) in the picture to help combat negative customer feedback.',
 
              `🚨 *Reminder Titans!* 🚨
 
