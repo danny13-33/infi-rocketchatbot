@@ -185,14 +185,14 @@ class RocketChatAutomation {
 
               Keep it safe and simple — always make a complete stop at every stop sign. Let’s look out for each other and stay compliant. 💪`,
 
-             `🚚 ➡ 👀
-             *Reversing*
-             Try and put yourself in situations where you have to reverse as little as possible. ❗ It is the most dangerous maneuver on the road. ❗
-             Always get out and look (GOAL) to see what is behind you.
-             Keep your speed under 5 MPH while backing up. Anything more than 5 MPH could get your account suspended.
-             Use both mirrors and your back-up camera. Never rely on just one of them.
-             Be aware of your van and its surroundings!
-             🌳 🚚 📫`',
+              `🚚 ➡ 👀
+              *Reversing*
+              Try and put yourself in situations where you have to reverse as little as possible. ❗ It is the most dangerous maneuver on the road. ❗
+              Always get out and look (GOAL) to see what is behind you.
+              Keep your speed under 5 MPH while backing up. Anything more than 5 MPH could get your account suspended.
+              Use both mirrors and your back-up camera. Never rely on just one of them.
+              Be aware of your van and its surroundings!
+              🌳 🚚 📫`,
 
         ];
 
