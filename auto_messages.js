@@ -193,7 +193,10 @@ class RocketChatAutomation {
               Use both mirrors and your back-up camera. Never rely on just one of them.
               Be aware of your van and its surroundings!
               🌳 🚚 📫`,
-
+              
+             `@all 🚨 Accident or Incident? Report It Immediately! 📲\n\n` +
+             `If you're involved in any kind of incident or accident — no matter how minor — you must report it immediately through the proper channels. 📍 Do NOT leave the scene until you've been instructed to do so by management.\n\n` +
+             `Your safety and proper reporting are top priorities. Stay put, stay calm, and communicate.`,
         ];
 
         // Persisted state: { date: "YYYY-MM-DD", order: [shuffled indices], index: integer }
