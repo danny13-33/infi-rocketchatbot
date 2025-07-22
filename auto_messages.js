@@ -623,7 +623,7 @@ class RocketChatAutomation {
         const roomId = await this.checkRoomExists(roomName);
         if (!roomId || !this.isRoomForToday(roomName)) return;
         const message =
-            `:pushpin: RTS Reminders  :pushpin:\n\n` +
+            `:pushpin: RTS Reminders  :pushpin: @all\n\n` +
             `*Before you RTS*  :arrow_down:\n` +
             `🔎 Check your van for any missorts or missing packages 📦 before you RTS. Missing packages must be reattempted, and missorts must be delivered if they are within a 15-minute radius.\n\n` +
             `*Parking at Station*  :blue_car:\n` +
