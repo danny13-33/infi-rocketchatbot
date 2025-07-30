@@ -1,3 +1,6 @@
+// auto_messages.js
+
+require('dotenv').config();
 const axios = require('axios');
 const cron = require('node-cron');
 const { DateTime } = require('luxon');
@@ -14,7 +17,8 @@ class RocketChatAutomation {
     this.dannyUsername = dannyUsername;
     this.authToken = null;
     this.userId = null;
-    this.state = { date: null, order: [], index: 0 };
+
+    // ↙️ Full list of safety messages (no omissions!)
     this.safetyMessages = [
       `:eyes: *Distracted Driving*  
        Keep your eyes on the road, check your mirrors, and glance at your GPS.  
@@ -49,19 +53,19 @@ class RocketChatAutomation {
       `If you see a dog or signs of a dog at a delivery location, you can request that the paw print icon be added by navigating to the ‘Help’ page in the Delivery App and selecting ‘Report a dog on your route.’`,
        
       `To avoid dog bites: If you see a dog present, mark it as unable to deliver due to the dog and then follow contact compliance (CC). Never get out of the van if you see a dog loose.`,
-
+      
       `:leg: :eyes: Before you start walking to your destination, look at where you will be
        placing your feet. Don't jump in and out of the vans. Your legs are not designed to
        absorb incredible impact over and over. Use all of the steps available to you and
        try to maintain 3 points of contact. :raised_hand: 
        Rushing is when you make the most mistakes. Slow is smooth, smooth is
        fast. Find your groove and stick with it.`,
-
+      
       `:exclamation:  :cloud_rain: On days where moisture is high, we are also at high risk for slips, trips and
        falls. Three points of contact when getting out of the vans and be highly familiar
        with your pathing today. Being safe on the road is something you are all extremely
        capable of doing, please do it!`,
-
+      
       `:running_shirt_with_sash: Wearing a seatbelt is one of the safest things you can do to protect yourself
        when driving. Remember to always wear your seatbelt correctly — across your
        chest and waist. Never sit on your seatbelt when it is buckled.
@@ -74,23 +78,23 @@ class RocketChatAutomation {
        :point_right:  Remember to always wear your seatbelt when the vehicle is moving and
        only use your device when the vehicle is sitting still!  
        :point_left: Watch your speeds and let's have a great day today!`,
-
+      
       `:truck: :dash: :dash: *Speeding*  
        Speeding is one of the most common causes of accidents on the road.  
        If you are not sure of what the speed limit is, you should proceed with caution and operate at a speed that is typical for the road type and location (e.g., 25–30 mph in a neighborhood).  
        Be on the lookout for road signs indicating speed limit changes, as speeding violations are easy to avoid.  
        
        *Don't go off of what GPS tells you. Go off what the SIGNS say, because that is what the camera sees!*`,
-
+      
       `:truck:  :dash:  :eyes: *Make sure you keep an eye on your speed while delivering today!* 
        If you're in doubt about what the speed limit is, drive slower than you think it is. Always
        follow signs over what the GPS says the limit is. Let's keep today safe and finish Strong.`,
-
+      
       `Water is very important to your body's health. Hydration should be a top
        priority every time you know that you are scheduled to come in. Come to work
        hydrated with plenty of supplies so you can avoid suffering from dehydration while
        you are out on your route.`,
-
+      
       `:droplet: Please ensure that you are arriving to work hydrated with adequate water
        supply. There may be some water out on the pads, but understand that bringing
        water to work is your responsibility.
@@ -100,7 +104,7 @@ class RocketChatAutomation {
        yourself up to be a victim of dehydration.
        
        *If there is water on the pad, please be considerate of others.*`,
-
+      
       `:stop_sign: *Stop Signs* :stop_sign:  
        Come to a complete stop at all stop signs. Stop signs are placed at intersections to protect both you & others from avoidable crashes.  
        Can't see if any oncoming traffic is coming from where the sign is placed?  
@@ -147,112 +151,61 @@ class RocketChatAutomation {
        If you are merging then look at the side view mirrors and lean forward to get a different perspective.
 
        If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`,
-
+      
       `📌 Reminder: Try to avoid reversing whenever possible. If you must reverse, do not exceed 5 MPH — this triggers Netradyne alerts and, more importantly, helps keep you and others safe. 🚸
 
        Also, avoid parking on driveways. If you can see the front door from the street, there’s no need to pull into someone’s property. 🏠
        
        Let’s stay safe and smart out there!`
     ];
+
+    // persisted state: { date, order, index }
+    this.state = { date: null, order: [], index: 0 };
     this.loadOrInitState();
   }
 
+  // Load or initialize shuffle/state for today
   loadOrInitState() {
     const today = DateTime.now().setZone('America/Chicago').toISODate();
-    let saved = null;
+    let data = null;
     if (fs.existsSync(STATE_PATH)) {
-      try { saved = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')); }
-      catch (e) { /* ignore */ }
+      try { data = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')); }
+      catch {}
     }
-    if (saved?.date === today && Array.isArray(saved.order)) {
-      this.state = saved;
+    if (data?.date === today && Array.isArray(data.order) && Number.isInteger(data.index)) {
+      this.state = data;
     } else {
-      const count = this.safetyMessages.length;
-      this.state = {
-        date: today,
-        order: Array.from({ length: count }, (_, i) => i).sort(() => Math.random() - 0.5),
-        index: 0
-      };
+      const n = this.safetyMessages.length;
+      const order = Array.from({ length: n }, (_, i) => i);
+      for (let i = n - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      this.state = { date: today, order, index: 0 };
       this.saveState();
     }
   }
 
+  // Save state to disk
   saveState() {
     try {
-      fs.writeFileSync(STATE_PATH, JSON.stringify(this.state), 'utf8');
+      fs.writeFileSync(STATE_PATH, JSON.stringify(this.state, null, 2));
     } catch (e) {
-      console.error('❌ Failed to write state file:', e);
+      console.error('Failed to save state:', e);
     }
   }
-
-  listSafetyMessages() {
-    this.safetyMessages.forEach((msg, i) => {
-      console.log(`${i+1}. ${msg}`);
-    });
-  }
-
-  getCurrentRoomName() {
-    const now = DateTime.now().setZone('America/Chicago');
-    const day = now.day;
-    const suffix = this.getOrdinalSuffix(day);
-    return `${now.monthLong}-${day}${suffix}-${now.year}`;
-  }
-
-  getOrdinalSuffix(day) {
-    if (day >= 11 && day <= 13) return 'th';
-    switch (day % 10) {
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
-    }
-  }
-
-  async authenticate() {
-    const res = await axios.post(`${this.serverUrl}/api/v1/login`, {
-      user: this.username,
-      password: this.password
-    });
-    this.authToken = res.data.data.authToken;
-    this.userId = res.data.data.userId;
-  }
-
-  async getRoomId(roomName) {
-    // try existing
-    let res = await axios.get(
-      `${this.serverUrl}/api/v1/rooms.info?roomName=${encodeURIComponent(roomName)}`,
-      { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
-    ).catch(() => null);
-    if (res?.data?.room?._id) {
-      return res.data.room._id;
-    }
-    // create if missing
-    res = await axios.post(
-      `${this.serverUrl}/api/v1/channels.create`,
-      { name: roomName },
-      { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
-    );
-    return res.data.channel._id;
-  }
-}
-
-// ———————————————————————— END OF PART 1 ————————————————————————
-
-  // ———————————————————————— Part 2 ————————————————————————
-
+  // — END OF PART 1 —
+  // Get next message and advance index
   getNextSafetyMessage() {
-    // Rotate through today’s shuffled list
     const today = DateTime.now().setZone('America/Chicago').toISODate();
-    if (this.state.date !== today) {
-      this.loadOrInitState();
-    }
-    const idx = this.state.order[this.state.index];
-    const msg = this.safetyMessages[idx];
+    if (this.state.date !== today) this.loadOrInitState();
+    const msg = this.safetyMessages[this.state.order[this.state.index]];
     this.state.index = (this.state.index + 1) % this.safetyMessages.length;
     this.saveState();
     return msg;
   }
 
+  // Send a chat message to a room
   async sendMessage(roomId, text) {
     await axios.post(
       `${this.serverUrl}/api/v1/chat.postMessage`,
@@ -261,88 +214,112 @@ class RocketChatAutomation {
     );
   }
 
+  // Authenticate if needed
+  async ensureAuth() {
+    if (!this.authToken) {
+      const res = await axios.post(`${this.serverUrl}/api/v1/login`, {
+        user: this.username,
+        password: this.password
+      });
+      this.authToken = res.data.data.authToken;
+      this.userId    = res.data.data.userId;
+    }
+  }
+
+  // Send safety message every 30 min between 10:00–19:30 CT
   async sendSafetyMessage() {
     const now = DateTime.now().setZone('America/Chicago');
-    if (now.hour < 10 || now.hour > 19 || (now.hour === 19 && now.minute > 30)) {
-      return; // Only 10:00–19:30
-    }
-    if (!this.authToken) await this.authenticate();
-    const roomName = this.getCurrentRoomName();
-    const roomId = await this.getRoomId(roomName);
-    const msg = this.getNextSafetyMessage();
-    await this.sendMessage(roomId, msg);
+    if (now.hour < 10 || now.hour > 19 || (now.hour === 19 && now.minute > 30)) return;
+    await this.ensureAuth();
+    const roomId = await this.getRoomId(this.getCurrentRoomName());
+    await this.sendMessage(roomId, this.getNextSafetyMessage());
   }
 
+  // Hourly hydration reminders (May–Sep)
   async sendHydrationMessage() {
-    const m = DateTime.now().setZone('America/Chicago').month;
-    if (m < 5 || m > 9) return;
-    if (!this.authToken) await this.authenticate();
+    const mo = DateTime.now().setZone('America/Chicago').month;
+    if (mo < 5 || mo > 9) return;
+    await this.ensureAuth();
     const roomId = await this.getRoomId(this.getCurrentRoomName());
     await this.sendMessage(roomId,
-      `🌊 HYDRATE HYDRATE 🌊\nStay hydrated—drink water now to beat the heat!`);
+      `🌊HYDRATE HYDRATE HYDRATE🌊\n` +
+      `If you are reading this drink water now!\n` +
+      `Do not be a victim to heat. Stay hydrated!`
+    );
   }
 
+  // Daily heat reminder at 9 AM CT (May–Sep)
   async sendHeatReminderMessage() {
-    const m = DateTime.now().setZone('America/Chicago').month;
-    if (m < 5 || m > 9) return;
-    if (!this.authToken) await this.authenticate();
+    const mo = DateTime.now().setZone('America/Chicago').month;
+    if (mo < 5 || mo > 9) return;
+    await this.ensureAuth();
     const roomId = await this.getRoomId(this.getCurrentRoomName());
     await this.sendMessage(roomId,
-      `@all ⚠️ Texas heat reminder: Aim to finish half your route by 2 PM to avoid peak temperatures!`);
+      `@all ⚠️ Attention Titans! ⚠️\n\n` +
+      `Texas heat is no joke. Aim to finish more than half your route by 2 PM! 💪🔥`
+    );
   }
 
+  // Daily clock‑in reminder at 9:25 AM CT
   async sendClockInReminderMessage() {
-    if (!this.authToken) await this.authenticate();
+    await this.ensureAuth();
     const roomId = await this.getRoomId(this.getCurrentRoomName());
     await this.sendMessage(roomId,
-      `*Attention Titans* – please clock in now. If you can’t, email time@infi-dau7.com.`);
+      `*Attention Titans*\n` +
+      `@all This is your daily reminder to clock in. If you cannot, email time@infi-dau7.com immediately.`
+    );
   }
 
+  // On startup, DM Danny a test message
   async sendImmediateMessageToDanny() {
-    if (!this.authToken) await this.authenticate();
-    // ensure DM exists
-    const dmRes = await axios.post(
+    await this.ensureAuth();
+    const dm = await axios.post(
       `${this.serverUrl}/api/v1/im.create`,
       { username: this.dannyUsername },
       { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
     );
-    const dmRoomId = dmRes.data.room._id;
-    await this.sendMessage(dmRoomId,
-      `✅ Safety Automation Deployed Successfully. Test message.`);
+    await this.sendMessage(dm.data.room._id,
+      `✅ Safety Automation Deployed Successfully.\n` +
+      `This is your immediate test message, Danny.`
+    );
   }
 
+  // Helper: get or create a channel by name
+  async getRoomId(name) {
+    let id = null;
+    try {
+      const res = await axios.get(
+        `${this.serverUrl}/api/v1/rooms.info?roomName=${encodeURIComponent(name)}`,
+        { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+      );
+      id = res.data.room._id;
+    } catch {
+      const res2 = await axios.post(
+        `${this.serverUrl}/api/v1/channels.create`,
+        { name, readOnly: false },
+        { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+      );
+      id = res2.data.channel._id;
+    }
+    return id;
+  }
+
+  // Start all scheduled tasks
   startAutomation() {
-    // send test ping
     this.sendImmediateMessageToDanny().catch(console.error);
-
-    // Safety: every 30 min 10:00–19:30 CT
-    cron.schedule('0,30 10-19 * * *', () => {
-      this.sendSafetyMessage().catch(console.error);
-    }, { timezone: 'America/Chicago' });
-
-    // Hydration: every hour on the hour 10–18 CT, May–Sep
-    cron.schedule('0 10-18 * 5-9 *', () => {
-      this.sendHydrationMessage().catch(console.error);
-    }, { timezone: 'America/Chicago' });
-
-    // Heat reminder: 9:00 AM CT daily May–Sep
-    cron.schedule('0 9 * 5-9 *', () => {
-      this.sendHeatReminderMessage().catch(console.error);
-    }, { timezone: 'America/Chicago' });
-
-    // Clock‑in reminder: 9:25 AM CT daily
-    cron.schedule('25 9 * * *', () => {
-      this.sendClockInReminderMessage().catch(console.error);
-    }, { timezone: 'America/Chicago' });
+    cron.schedule('0,30 10-19 * * *', () => this.sendSafetyMessage().catch(console.error), { timezone: 'America/Chicago' });
+    cron.schedule('0 10-18 * 5-9 *',   () => this.sendHydrationMessage().catch(console.error), { timezone: 'America/Chicago' });
+    cron.schedule('0 9 * 5-9 *',       () => this.sendHeatReminderMessage().catch(console.error),   { timezone: 'America/Chicago' });
+    cron.schedule('25 9 * * *',        () => this.sendClockInReminderMessage().catch(console.error), { timezone: 'America/Chicago' });
   }
 
+  // Stop all jobs
   stopAutomation() {
     cron.getTasks().forEach(task => task.stop());
   }
 }
 
-// ———————————————————————— Bootstrap ————————————————————————
-
+// Bootstrap at runtime
 (async () => {
   const bot = new RocketChatAutomation(
     process.env.ROCKET_CHAT_SERVER_URL,
