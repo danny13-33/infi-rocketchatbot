@@ -1,3 +1,5 @@
+// auto_messages.js
+
 require('dotenv').config();
 const axios = require('axios');
 const cron = require('node-cron');
@@ -16,6 +18,14 @@ class RocketChatAutomation {
     this.authToken = null;
     this.userId = null;
 
+    // Tasks
+    this.scheduledSafetyTask = null;
+    this.scheduledHydrationTask = null;
+    this.scheduledHeatReminderTask = null;
+    this.scheduledClockInTask = null;
+    this.scheduledRTSReminderTask = null;
+
+    // All safety messages
     this.safetyMessages = [
       `:eyes: *Distracted Driving*  
        Keep your eyes on the road, check your mirrors, and glance at your GPS.  
@@ -153,108 +163,55 @@ class RocketChatAutomation {
 
        Also, avoid parking on driveways. If you can see the front door from the street, there’s no need to pull into someone’s property. 🏠
        
-       Let’s stay safe and smart out there!`,
-
-      `@all *READ THE DELIVERY NOTES*\n
-       Your customer feedback score is affected by this.\n
-       If the notes say to leave in a specific spot, then do so.\n
-       Complete contact compliance, mark the package appropriately, and move on if you cannot follow the notes for any reason.\n
-       📦 📋 👀`,
-
-      `📸 *Take Quality Photos* 📸\n
-       All of your photos are screened and are either rejected or accepted by Amazon. Take your time to make sure you are taking clear photos of the package. Get with your management team with any questions on how to improve your POD (Picture on Delivery) metric.\n\n
-       • Do not take pictures of delivery drop-off boxes; take a clear picture of the packages instead.\n
-       • Do not take a picture of a package behind a fence.\n
-       • If you can’t get a clear picture, move the package(s) to somewhere you can, then complete the delivery to the requested area.\n\n
-       It is important that you swipe to finish the delivery at the location of the POD. Try to include anything recognizable (door number, unit number, doormat, etc.) in the picture to help combat negative customer feedback.`,
-
-      `🚨 *Reminder Titans!* 🚨
-
-       Amazon is now treating rolling stops the same as running red lights. That means:
-
-       🛑 Rolling through a stop sign = 🚦 Running a red light  
-       ➡️ Route paused  
-       ➡️ Driver account suspended
-
-       Each violation requires us to take disciplinary action, and having a driver account suspended mid-route creates extra stress for the whole team.
-
-       Keep it safe and simple — always make a complete stop at every stop sign. Let’s look out for each other and stay compliant. 💪`,
-
-      `🚚 ➡ 👀
-       *Reversing*
-       Try and put yourself in situations where you have to reverse as little as possible. ❗ It is the most dangerous maneuver on the road. ❗
-       Always get out and look (GOAL) to see what is behind you.
-       Keep your speed under 5 MPH while backing up. Anything more than 5 MPH could get your account suspended.
-       Use both mirrors and your back-up camera. Never rely on just one of them.
-       Be aware of your van and its surroundings!
-       🌳 🚚 📫`,
-
-      `@all 🚨 Accident or Incident? Report It Immediately! 📲\n\n
-       If you're involved in any kind of incident or accident — no matter how minor — you must report it immediately through the proper channels. 📍 Do NOT leave the scene until you've been instructed to do so by management.\n\n
-       Your safety and proper reporting are top priorities. Stay put, stay calm, and communicate.`
+       Let’s stay safe and smart out there!`
     ];
 
-    // persisted state
-    this.state = {
-      date: null,
-      order: [],
-      index: 0,
-      usedImages: {},
-      sentMessages: {}
-    };
+    // Persisted state container
+    this.state = { date: null, order: [], index: 0 };
     this.dailyOrder = [];
     this.messageIndex = 0;
 
+    // Initialize or load today's shuffle
     this.loadOrInitState();
   }
 
-  // …next: loadOrInitState(), saveState(), and all remaining methods…
+  // ...rest of your methods follow...
   // Load existing state or initialize a new shuffle for today
   loadOrInitState() {
     const today = DateTime.now().setZone('America/Chicago').toISODate();
-
     let persisted = null;
     if (fs.existsSync(STATE_PATH)) {
       try {
-        const raw = fs.readFileSync(STATE_PATH, 'utf8');
-        persisted = JSON.parse(raw);
+        persisted = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'));
       } catch {
         persisted = null;
       }
     }
-
-    if (
-      persisted &&
-      persisted.date === today &&
-      Array.isArray(persisted.order) &&
-      typeof persisted.index === 'number'
-    ) {
+    if (persisted && persisted.date === today && Array.isArray(persisted.order) && typeof persisted.index === 'number') {
       this.state = persisted;
       this.dailyOrder = persisted.order;
       this.messageIndex = persisted.index;
     } else {
       const count = this.safetyMessages.length;
       const indices = Array.from({ length: count }, (_, i) => i);
+      // Fisher–Yates shuffle
       for (let i = count - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [indices[i], indices[j]] = [indices[j], indices[i]];
       }
       this.dailyOrder = indices;
       this.messageIndex = 0;
-      this.state = { date: today, order: indices, index: 0, usedImages: {}, sentMessages: {} };
-      this.saveState();
-    }
-  }
-
-  // Persist current state to disk
-  saveState() {
-    try {
+      this.state = { date: today, order: indices, index: 0 };
       fs.writeFileSync(STATE_PATH, JSON.stringify(this.state, null, 2), 'utf8');
-    } catch (err) {
-      console.error('❌ Failed to write state file:', err);
     }
   }
 
+  // Persist current state
+  saveState() {
+    fs.writeFileSync(STATE_PATH, JSON.stringify(this.state, null, 2), 'utf8');
+  }
+
+  // Authenticate with Rocket.Chat
   async authenticate() {
     const res = await axios.post(`${this.serverUrl}/api/v1/login`, {
       user: this.username,
@@ -264,64 +221,24 @@ class RocketChatAutomation {
     this.userId = res.data.data.userId;
   }
 
+  // Compute today's room name, e.g. "July-30th-2025"
   getCurrentRoomName() {
-    const nowCT = DateTime.now().setZone('America/Chicago');
-    const month = nowCT.monthLong;
-    const day = nowCT.day;
-    const suffix = this.getOrdinalSuffix(day);
-    const year = nowCT.year;
-    return `${month}-${day}${suffix}-${year}`;
-  }
-
-  getOrdinalSuffix(day) {
-    if (day >= 11 && day <= 13) return 'th';
-    switch (day % 10) {
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
-    }
-  }
-
-  async checkRoomExists(roomName) {
-    try {
-      const res = await axios.get(
-        `${this.serverUrl}/api/v1/rooms.info?roomName=${encodeURIComponent(roomName)}`,
-        { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
-      );
-      return res.data.room._id;
-    } catch {
-      return null;
-    }
-  }
-
-  async sendMessage(roomId, text) {
-    await axios.post(
-      `${this.serverUrl}/api/v1/chat.postMessage`,
-      { roomId, text },
-      { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
-    );
-  }
-
-  async createRoom(roomName, description) {
-    const res = await axios.post(
-      `${this.serverUrl}/api/v1/channels.create`,
-      { name: roomName, description, readOnly: false },
-      { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
-    );
-    return res.data.channel._id;
-  }
-
-  isBusinessHours() {
     const now = DateTime.now().setZone('America/Chicago');
-    const minutes = now.hour * 60 + now.minute;
-    return minutes >= 10 * 60 && minutes <= 19 * 60 + 30;
+    const month = now.monthLong;
+    const day = now.day;
+    const suffix = (d => {
+      if (d >= 11 && d <= 13) return 'th';
+      switch (d % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    })(day);
+    return `${month}-${day}${suffix}-${now.year}`;
   }
 
-  isRoomForToday(name) {
-    return name === this.getCurrentRoomName();
-  }
-
+  // Fetch next safety message
   getNextSafetyMessage() {
     const today = DateTime.now().setZone('America/Chicago').toISODate();
     if (this.state.date !== today) this.loadOrInitState();
@@ -333,103 +250,131 @@ class RocketChatAutomation {
     return msg;
   }
 
-  async sendSafetyMessage() {
-    if (!this.isBusinessHours()) return;
-    if (!this.authToken) await this.authenticate();
-
-    const roomName = this.getCurrentRoomName();
-    const roomId = await this.checkRoomExists(roomName);
-    if (!roomId || !this.isRoomForToday(roomName)) return;
-
-    const text = this.getNextSafetyMessage();
-    await this.sendMessage(roomId, text);
-  }
-
-  async sendHydrationMessage() {
-    const nowCT = DateTime.now().setZone('America/Chicago');
-    if (nowCT.month < 5 || nowCT.month > 9) return;
-    if (!this.authToken) await this.authenticate();
-
-    const roomName = this.getCurrentRoomName();
-    const roomId = await this.checkRoomExists(roomName);
-    if (!roomId) return;
-
-    const text =
-      `🌊HYDRATE HYDRATE HYDRATE🌊\n` +
-      `If you are reading this drink water now!\n` +
-      `Do Not be a victim to Heat. Stay Hydrated`;
-    await this.sendMessage(roomId, text);
-  }
-
-  async sendHeatReminderMessage() {
-    const nowCT = DateTime.now().setZone('America/Chicago');
-    if (nowCT.month < 5 || nowCT.month > 9) return;
-    if (!this.authToken) await this.authenticate();
-
-    const roomName = this.getCurrentRoomName();
-    const roomId = await this.checkRoomExists(roomName);
-    if (!roomId) return;
-
-    const text =
-      `@all ⚠️ Attention Titans! ⚠️\n\n` +
-      `As always, we're reminding you that the Texas heat is no joke... 💪🔥`;
-    await this.sendMessage(roomId, text);
-  }
-
-  async sendClockInReminderMessage() {
-    if (!this.authToken) await this.authenticate();
-
-    const roomName = this.getCurrentRoomName();
-    const roomId = await this.checkRoomExists(roomName);
-    if (!roomId) return;
-
-    const text =
-      `*Attention Titans*\n` +
-      `@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in send an email to time@infi-dau7.com immediately.  Thank you!`;
-    await this.sendMessage(roomId, text);
-  }
-
-  async getOrCreateDirectMessageRoom(username) {
-    const res = await axios.post(
-      `${this.serverUrl}/api/v1/im.create`,
-      { username },
+  // Post a message to a room
+  async sendMessage(roomId, text) {
+    await axios.post(
+      `${this.serverUrl}/api/v1/chat.postMessage`,
+      { roomId, text },
       { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
     );
-    return res.data.room._id;
   }
 
-  async sendImmediateMessageToDanny() {
+  // Ensure we're in business hours
+  isBusinessHours() {
+    const now = DateTime.now().setZone('America/Chicago');
+    const minutes = now.hour * 60 + now.minute;
+    return minutes >= 10 * 60 && minutes <= 19 * 60 + 30;
+  }
+
+  // General send to today's room
+  async postToDaily(text) {
     if (!this.authToken) await this.authenticate();
-
-    const dm = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
-    if (!dm) return;
-
-    const text = `✅ Safety Automation Deployed Successfully.\nThis is your immediate test message, Danny.`;
-    await this.sendMessage(dm, text);
+    const roomName = this.getCurrentRoomName();
+    const info = await axios.get(
+      `${this.serverUrl}/api/v1/rooms.info?roomName=${encodeURIComponent(roomName)}`,
+      { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+    );
+    await this.sendMessage(info.data.room._id, text);
   }
 
+  // Safety message every 30 minutes
+  async sendSafetyMessage() {
+    if (!this.isBusinessHours()) return;
+    const msg = this.getNextSafetyMessage();
+    await this.postToDaily(msg);
+  }
+
+  // Hydration message hourly in summer
+  async sendHydrationMessage() {
+    const m = DateTime.now().setZone('America/Chicago').month;
+    if (m < 5 || m > 9) return;
+    await this.postToDaily(
+      `🌊HYDRATE HYDRATE HYDRATE🌊\nIf you are reading this drink water now!\nDo Not be a victim to Heat. Stay Hydrated`
+    );
+  }
+
+  // Heat reminder daily at 9am summer
+  async sendHeatReminderMessage() {
+    const m = DateTime.now().setZone('America/Chicago').month;
+    if (m < 5 || m > 9) return;
+    await this.postToDaily(
+      `@all ⚠️ Attention Titans! ⚠️\n\n` +
+      `As always, we're reminding you that the Texas heat is no joke... You’ve got this Titans! 💪🔥`
+    );
+  }
+
+  // Clock-in reminder at 9:25am
+  async sendClockInReminderMessage() {
+    await this.postToDaily(
+      `*Attention Titans*\n` +
+      `@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in send an email to time@infi-dau7.com immediately. Thank you!`
+    );
+  }
+
+  // RTS reminder at 6pm
+  async sendRTSReminderMessage() {
+    await this.postToDaily(
+      `:pushpin: RTS Reminders  :pushpin:\n\n` +
+      `*Before you RTS*  :arrow_down:\n` +
+      `🔎 Check your van for any missorts or missing packages 📦 before you RTS. Missing packages must be reattempted, and missorts must be delivered if they are within a 15-minute radius.\n\n` +
+      `*Parking at Station*  :blue_car:\n` +
+      `Clean out your van! Take your trash🗑, wipe it down :sponge:, and sweep it out. 🧹 You may not be in the same van tomorrow. Do not leave your mess for someone else. :do_not_litter:\n\n` +
+      `*Equipment turn in*  :bulb:\n` +
+      `When you turn in your bag at the end of the night, check it thoroughly. Make sure the work device 📱, the gas card 💳, the keys 🔑, and the portable charger 🔋 are inside. Also, wait the full 2 minutes for your post trip on standard vehicles and 3 minutes on step vans. And be certain you've clocked out before leaving. :clock8:`
+    );
+  }
+
+  // Start all scheduled tasks
   startAutomation() {
-    // send test
-    this.sendImmediateMessageToDanny();
+    // Safety: every 30m from 10:00–19:30
+    this.scheduledSafetyTask = cron.schedule(
+      '0,30 10-19 * * *',
+      () => this.sendSafetyMessage(),
+      { timezone: 'America/Chicago' }
+    );
 
-    // safety: every 30 minutes 10:00–19:30
-    cron.schedule('0,30 10-19 * * *', () => this.sendSafetyMessage(), { timezone: 'America/Chicago' });
+    // Hydration: every hour 10–18, May–Sep
+    this.scheduledHydrationTask = cron.schedule(
+      '0 10-18 * 5-9 *',
+      () => this.sendHydrationMessage(),
+      { timezone: 'America/Chicago' }
+    );
 
-    // hydration: hourly 10–18 May–Sep
-    cron.schedule('0 10-18 * 5-9 *', () => this.sendHydrationMessage(), { timezone: 'America/Chicago' });
+    // Heat reminder: 9am daily, May–Sep
+    this.scheduledHeatReminderTask = cron.schedule(
+      '0 9 * 5-9 *',
+      () => this.sendHeatReminderMessage(),
+      { timezone: 'America/Chicago' }
+    );
 
-    // heat: daily 9:00 May–Sep
-    cron.schedule('0 9 * 5-9 *', () => this.sendHeatReminderMessage(), { timezone: 'America/Chicago' });
+    // Clock-in: 9:25am daily
+    this.scheduledClockInTask = cron.schedule(
+      '25 9 * * *',
+      () => this.sendClockInReminderMessage(),
+      { timezone: 'America/Chicago' }
+    );
 
-    // clock-in: daily 9:25
-    cron.schedule('25 9 * * *', () => this.sendClockInReminderMessage(), { timezone: 'America/Chicago' });
+    // RTS reminder: 6pm daily
+    this.scheduledRTSReminderTask = cron.schedule(
+      '0 18 * * *',
+      () => this.sendRTSReminderMessage(),
+      { timezone: 'America/Chicago' }
+    );
   }
 
+  // Stop all tasks
   stopAutomation() {
-    cron.getTasks().forEach(task => task.stop());
+    [
+      this.scheduledSafetyTask,
+      this.scheduledHydrationTask,
+      this.scheduledHeatReminderTask,
+      this.scheduledClockInTask,
+      this.scheduledRTSReminderTask
+    ].forEach(task => task && task.stop());
   }
 }
 
+// Initialize and start
 (async () => {
   const bot = new RocketChatAutomation(
     process.env.ROCKET_CHAT_SERVER_URL,
@@ -439,5 +384,3 @@ class RocketChatAutomation {
   );
   bot.startAutomation();
 })();
-
-::contentReference[oaicite:0]{index=0}
