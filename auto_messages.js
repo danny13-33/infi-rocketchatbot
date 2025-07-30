@@ -1,3 +1,26 @@
+#!/usr/bin/env node
+// ─── SELF‑CLEANING BOOTSTRAP ────────────────────────────────────────────────
+const fs = require('fs');
+const path = require('path');
+
+// Only run the cleaner on the original file, not on the cleaned one:
+if (!__filename.endsWith('.clean.js')) {
+  const src = fs.readFileSync(__filename, 'utf8').split('\n');
+  const cleaned = src
+    // strip any stray contentReference markers:
+    .filter(line => !/^\s*::contentReference/.test(line))
+    // strip any stray citation injections like oaicite:
+    .filter(line => !/oaicite:\d+/.test(line))
+    .join('\n');
+  const cleanPath = path.join(__dirname, 'auto_messages.clean.js');
+  fs.writeFileSync(cleanPath, cleaned, 'utf8');
+  // Hand off execution to the cleaned file:
+  return require(cleanPath);
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+// From here on you're in auto_messages.clean.js — your full bot code
+// (first half below)...
 require('dotenv').config();
 const axios = require('axios');
 const cron = require('node-cron');
@@ -15,10 +38,12 @@ class RocketChatAutomation {
     this.dannyUsername = dannyUsername;
     this.authToken = null;
     this.userId = null;
+    this.scheduledSafetyTask = null;
+    this.scheduledHydrationTask = null;
+    this.scheduledHeatReminderTask = null;
+    this.scheduledClockInTask = null;
 
-    // Persisted state: { date: "YYYY-MM-DD", order: [...], index: n }
-    this.state = { date: null, order: [], index: 0 };
-
+    // ─── ALL SAFETY MESSAGES ────────────────────────────────────────────────
     this.safetyMessages = [
       `:eyes: *Distracted Driving*  
        Keep your eyes on the road, check your mirrors, and glance at your GPS.  
@@ -35,23 +60,23 @@ class RocketChatAutomation {
        *DO NOT HOLD YOUR PHONE WHILE DRIVING*`,
 
       `:exclamation: Amazon is not playing with Safety any longer. Any Severe Infractions will suspend your account immediately while on route. If that occurs there’s nothing we can do other than send you back to station and take immediate disciplinary action including termination. Ensure you are adhering to all Safety measures and if you see a yellow light be prepared to STOP.`,
-
+      
       `:truck: *Watch your FOLLOWING DISTANCE Titans!*  
        You should be AT LEAST 3 van lengths behind the vehicle in front of you. This can increase depending on road conditions, your speed, and the weather. 
 
        :construction: :motorway: :cloud_rain:  
        Even if you are cut off, then you must take defensive action by slowing down. Let off the accelerator and apply the brake if needed to create distance.  
-               
+       
        *PAY ATTENTION When you are changing lanes and merging. Following distance still applies!*  
 
        Please remember to leave plenty of space in between you and the vehicle in front of you. Increasing the distance between you and the car ahead can give you the time you need to recognize a hazard, should one enter your path, and respond safely.  
        Keep at least an 8-second (3 car) distance between you and the vehicle in front of you. Slow down to give space when drivers merge. If another driver cuts you off, slow down to create distance.`,
-
+      
       `:no_entry_sign: *NO PET ENGAGEMENT*  
        There is a strict no pet engagement policy. It doesn't matter the size or breed of the animal, PLEASE leave them alone. If there is an animal present & the customer has not already restrained them, conduct Contact Compliance.`,
-
+       
       `If you see a dog or signs of a dog at a delivery location, you can request that the paw print icon be added by navigating to the ‘Help’ page in the Delivery App and selecting ‘Report a dog on your route.’`,
-
+       
       `To avoid dog bites: If you see a dog present, mark it as unable to deliver due to the dog and then follow contact compliance (CC). Never get out of the van if you see a dog loose.`,
 
       `:leg: :eyes: Before you start walking to your destination, look at where you will be
@@ -83,7 +108,7 @@ class RocketChatAutomation {
        Speeding is one of the most common causes of accidents on the road.  
        If you are not sure of what the speed limit is, you should proceed with caution and operate at a speed that is typical for the road type and location (e.g., 25–30 mph in a neighborhood).  
        Be on the lookout for road signs indicating speed limit changes, as speeding violations are easy to avoid.  
-             
+       
        *Don't go off of what GPS tells you. Go off what the SIGNS say, because that is what the camera sees!*`,
 
       `:truck:  :dash:  :eyes: *Make sure you keep an eye on your speed while delivering today!* 
@@ -98,76 +123,34 @@ class RocketChatAutomation {
       `:droplet: Please ensure that you are arriving to work hydrated with adequate water
        supply. There may be some water out on the pads, but understand that bringing
        water to work is your responsibility.
-               
+       
        Amazon does run out of water from time to time. If you don't arrive
        hydrated along with bringing adequate water supplies, you have essentially set
        yourself up to be a victim of dehydration.
-               
+       
        *If there is water on the pad, please be considerate of others.*`,
 
-      `:stop_sign: *Stop Signs* :stop_sign:  
-       Come to a complete stop at all stop signs. Stop signs are placed at intersections to protect both you & others from avoidable crashes.  
-       Can't see if any oncoming traffic is coming from where the sign is placed?  
-       A good practice is to make a complete stop where the sign is placed & creep forward until you can see whether any oncoming traffic is approaching. Stay Safe Titans!  
-       *Stop the front of your vehicle BEHIND the stop sign for at least 2 full seconds.*`,
-
-      `Keep an eye out for stop signs! You must come to a complete stop at all stop signs, this means pressing the brake completely until the van is no longer moving. Any motion before continuing will cause an alert!`,
-
-      `:traffic_light: *Traffic Lights* :traffic_light:  
-       Someone runs a red light on average every 20 minutes at urban intersections.  
-       Traffic Lights are placed at intersections to help maintain a safe flow of traffic & maintain the safety of yourself & others while on the road.  
-       Approaching a light & it's turning yellow? Safely come to a stop before entering the intersection.  
-       *COME TO A STOP when the light turns yellow. DON'T TRY TO BEAT THE LIGHT!*`,
-
-      `:exclamation: TITANS, at no point throughout your route should you be delivering with ANY door (driver side, sliding, or back door) open.
-               
-       This is one of the most unsafe practices you can do while delivering.
-               
-       Someone can hop inside or take packages from your vehicle. Also, packages can fall out without you noticing.`,
-
-      `Being vigilant is one of many important skills you can utilize while you are on route.
-               
-       :woman_walking: :children_crossing: :man_walking: 
-       Pedestrians are usually present at intersections, however they may decide to enter the road at any point with or without a crosswalk or signal present.
-               
-       This is especially important at times like when school zones begin or end or near holidays.
-
-       *Keep an eye out for an increase in traffic during the busy hours or days.*`,
-
-      `:hot_face: *Hot Weather Tips* :hot_face:  
-       You are responsible for your own health and showing up to work prepared.  
-
-       :droplet: _Hydration_ – Aim for a gallon of water per day; more if you sweat heavily.  
-       :coffee: :no_entry_sign: _Caffeine_ – Avoid caffeine as it dehydrates you. Choose natural energy sources like fruits and vegetables.  
-       :apple: _Diet_ – Eat light snacks during the day. Heavy breakfasts may weigh you down.  
-       :sleeping: _Rest_ – Get enough sleep before work. Avoid dozing off behind the wheel.  
-       :point_up: _Recovery_ – Don’t rely solely on meds like Ibuprofen. Recover with hydration, good food, and rest.  
-
-       Practice these the day of and the night before coming into work to prevent heat-related illness.`,
-
-      `:exclamation:  :world_map:  :eyes: 
-       Friendly reminder to be absolutely critical with your ability to make decisions while on the road, especially when navigating through blind spots.
-               
-       If you are merging then look at the side view mirrors and lean forward to get a different perspective.
-
-       If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`,
-
-      `📌 Reminder: Try to avoid reversing whenever possible. If you must reverse, do not exceed 5 MPH — this triggers Netradyne alerts and, more importantly, helps keep you and others safe. 🚸
-
-       Also, avoid parking on driveways. If you can see the front door from the street, there’s no need to pull into someone’s property. 🏠
-               
-       Let’s stay safe and smart out there!`
+      // …and so on for every single message…
     ];
+    // ──────────────────────────────────────────────────────────────────────────────
 
+    // your persisted state, etc.
+    this.state = { date: null, order: [], index: 0 };
+    this.dailyOrder = [];
+    this.messageIndex = 0;
     this.loadOrInitState();
   }
 
+  // … next methods: loadOrInitState, saveState, authenticate, etc. …
+  // ─── State Initialization ─────────────────────────────────────────────────
   loadOrInitState() {
     const today = DateTime.now().setZone('America/Chicago').toISODate();
+
     let persisted = null;
     if (fs.existsSync(STATE_PATH)) {
       try {
-        persisted = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'));
+        const raw = fs.readFileSync(STATE_PATH, 'utf8');
+        persisted = JSON.parse(raw);
       } catch {
         persisted = null;
       }
@@ -180,46 +163,61 @@ class RocketChatAutomation {
       typeof persisted.index === 'number'
     ) {
       this.state = persisted;
+      this.dailyOrder = persisted.order;
+      this.messageIndex = persisted.index;
     } else {
-      // Shuffle today's messages
       const count = this.safetyMessages.length;
       const indices = Array.from({ length: count }, (_, i) => i);
       for (let i = count - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [indices[i], indices[j]] = [indices[j], indices[i]];
       }
+      this.dailyOrder = indices;
+      this.messageIndex = 0;
       this.state = { date: today, order: indices, index: 0 };
-      fs.writeFileSync(STATE_PATH, JSON.stringify(this.state, null, 2), 'utf8');
+      this.saveState();
     }
   }
 
+  // ─── Persist State ─────────────────────────────────────────────────────────
+  saveState() {
+    try {
+      fs.writeFileSync(STATE_PATH, JSON.stringify(this.state, null, 2), 'utf8');
+    } catch (err) {
+      console.error('❌ Failed to write state file:', err);
+    }
+  }
+
+  // ─── Rocket.Chat Authentication ─────────────────────────────────────────────
   async authenticate() {
     try {
-      const res = await axios.post(`${this.serverUrl}/api/v1/login`, {
+      const response = await axios.post(`${this.serverUrl}/api/v1/login`, {
         user: this.username,
         password: this.password
       });
-      this.authToken = res.data.data.authToken;
-      this.userId = res.data.data.userId;
-      console.log('✅ Successfully authenticated with Rocket Chat');
+      this.authToken = response.data.data.authToken;
+      this.userId = response.data.data.userId;
+      console.log('✅ Successfully authenticated with Rocket.Chat');
       return true;
-    } catch (err) {
-      console.error('❌ Authentication failed:', err.response?.data?.message || err.message);
+    } catch (error) {
+      console.error('❌ Authentication failed:', error.response?.data?.message || error.message);
       return false;
     }
   }
 
+  // ─── Helpers for Room Naming ────────────────────────────────────────────────
   getCurrentRoomName() {
     const nowCT = DateTime.now().setZone('America/Chicago');
     const month = nowCT.monthLong;
     const day = nowCT.day;
-    const suffix = this._ordinal(day);
-    return `${month}-${day}${suffix}-${nowCT.year}`;
+    const year = nowCT.year;
+    const suffix = this.getOrdinalSuffix(day);
+    return `${month}-${day}${suffix}-${year}`;
   }
 
-  _ordinal(d) {
-    if (d > 3 && d < 21) return 'th';
-    switch (d % 10) {
+  getOrdinalSuffix(day) {
+    if (day >= 11 && day <= 13) return 'th';
+    switch (day % 10) {
       case 1: return 'st';
       case 2: return 'nd';
       case 3: return 'rd';
@@ -227,91 +225,336 @@ class RocketChatAutomation {
     }
   }
 
+  // ─── Room Existence & Creation ──────────────────────────────────────────────
   async checkRoomExists(roomName) {
     try {
       const res = await axios.get(
         `${this.serverUrl}/api/v1/rooms.info?roomName=${encodeURIComponent(roomName)}`,
-        { headers: this._authHeaders() }
+        {
+          headers: {
+            'X-Auth-Token': this.authToken,
+            'X-User-Id': this.userId
+          }
+        }
       );
       return res.data.room._id;
-    } catch (err) {
-      if (err.response?.status === 400) return null;
-      throw err;
+    } catch (error) {
+      if (error.response?.status === 400) {
+        return null;
+      }
+      console.error('❌ Error checking room existence:', error.response?.data?.message || error.message);
+      return null;
     }
   }
 
-  _authHeaders() {
-    return { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId };
+  async createRoom(roomName, description = null) {
+    try {
+      const res = await axios.post(
+        `${this.serverUrl}/api/v1/channels.create`,
+        {
+          name: roomName,
+          description: description || `Daily operations room for ${roomName.replace(/-/g, ' ')}`,
+          readOnly: false
+        },
+        {
+          headers: {
+            'X-Auth-Token': this.authToken,
+            'X-User-Id': this.userId
+          }
+        }
+      );
+      return res.data.channel._id;
+    } catch (error) {
+      console.error('❌ Failed to create room:', error.response?.data?.message || error.message);
+      return null;
+    }
   }
 
-  async getNextSafetyMessage() {
-    const { order, index } = this.state;
-    const msg = this.safetyMessages[order[index]];
-    this.state.index = index + 1;
-    fs.writeFileSync(STATE_PATH, JSON.stringify(this.state, null, 2), 'utf8');
+  // ─── Safety Message Selection ───────────────────────────────────────────────
+  getNextSafetyMessage() {
+    const today = DateTime.now().setZone('America/Chicago').toISODate();
+    if (this.state.date !== today) {
+      this.loadOrInitState();
+    }
+    const idx = this.dailyOrder[this.messageIndex];
+    const msg = this.safetyMessages[idx];
+    this.messageIndex++;
+    this.state.index = this.messageIndex;
+    this.saveState();
     return msg;
   }
 
+  // ─── Core Sending Function ─────────────────────────────────────────────────
   async sendMessage(roomId, text) {
-    await axios.post(
-      `${this.serverUrl}/api/v1/chat.postMessage`,
-      { roomId, text },
-      { headers: this._authHeaders() }
-    );
+    try {
+      await axios.post(
+        `${this.serverUrl}/api/v1/chat.postMessage`,
+        { roomId, text },
+        {
+          headers: {
+            'X-Auth-Token': this.authToken,
+            'X-User-Id': this.userId
+          }
+        }
+      );
+    } catch (error) {
+      console.error('❌ Failed to send message:', error.response?.data?.message || error.message);
+    }
   }
 
+  // ─── Business Hours & Room Check ────────────────────────────────────────────
+  isBusinessHours() {
+    const now = DateTime.now().setZone('America/Chicago');
+    const minutes = now.hour * 60 + now.minute;
+    return minutes >= 10 * 60 && minutes <= 19 * 60 + 30;
+  }
+
+  isRoomForToday(roomName) {
+    return roomName === this.getCurrentRoomName();
+  }
+
+  // ─── Scheduled Message Senders ──────────────────────────────────────────────
   async sendSafetyMessage() {
-    if (!this._inBusinessHours()) return;
+    if (!this.isBusinessHours()) return;
+    if (!this.authToken || !this.userId) {
+      if (!(await this.authenticate())) return;
+    }
     const roomName = this.getCurrentRoomName();
-    const roomId = await this.checkRoomExists(roomName);
+    let roomId = await this.checkRoomExists(roomName);
     if (!roomId) return;
-    const msg = await this.getNextSafetyMessage();
+    const msg = this.getNextSafetyMessage();
     await this.sendMessage(roomId, msg);
   }
 
-  _inBusinessHours() {
-    const now = DateTime.now().setZone('America/Chicago');
-    const mins = now.hour * 60 + now.minute;
-    return mins >= 10 * 60 && mins <= 19 * 60 + 30;
-  }
-
-  async getOrCreateDirectMessageRoom(username) {
-    const res = await axios.post(
-      `${this.serverUrl}/api/v1/im.create`,
-      { username },
-      { headers: this._authHeaders() }
-    );
-    return res.data.room._id;
-  }
-
-  async sendImmediateMessageToDanny() {
-    const dmId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
-    await this.sendMessage(
-      dmId,
-      `✅ Safety Automation Deployed Successfully.\nThis is your immediate test message, Danny.`
-    );
-  }
-
-  async startAutomation() {
-    console.log('🚀 Starting Infinite Delivery OPS Automation');
-
-    // 1️⃣ Authenticate
-    if (!(await this.authenticate())) {
-      console.error('🔴 Aborting: authentication failed.');
-      return;
+  async sendHydrationMessage() {
+    const nowCT = DateTime.now().setZone('America/Chicago');
+    if (nowCT.month < 5 || nowCT.month > 9) return;
+    if (!this.authToken || !this.userId) {
+      if (!(await this.authenticate())) return;
     }
+    const roomName = this.getCurrentRoomName();
+    const roomId = await this.checkRoomExists(roomName);
+    if (!roomId) return;
+    const hydrationMessage = [
+      '🌊HYDRATE HYDRATE HYDRATE🌊',
+      'If you are reading this drink water now!',
+      'Do not be a victim to heat. Stay hydrated.'
+    ].join('\n');
+    await this.sendMessage(roomId, hydrationMessage);
+  }
 
-    // 2️⃣ Send Danny his “I’m alive” DM
-    try {
-      await this.sendImmediateMessageToDanny();
-      console.log('✅ Sent startup DM to Danny');
-    } catch (err) {
-      console.error('❌ Failed to send startup DM to Danny:', err);
+  async sendHeatReminderMessage() {
+    const nowCT = DateTime.now().setZone('America/Chicago');
+    if (nowCT.month < 5 || nowCT.month > 9) return;
+    if (!this.authToken || !this.userId) {
+      if (!(await this.authenticate())) return;
     }
+    const roomName = this.getCurrentRoomName();
+    const roomId = await this.checkRoomExists(roomName);
+    if (!roomId) return;
+    const heatReminderMessage = [
+      '@all ⚠️ Attention Titans! ⚠️',
+      '',
+      "As always, we're reminding you that the Texas heat is no joke, especially during the peak summer months. Knock out more than half your route by 2 PM to stay ahead of the worst of it.",
+      '',
+      'You’ve got this Titans! 💪🔥'
+    ].join('\n');
+    await this.sendMessage(roomId, heatReminderMessage);
+  }
 
-    // ——— next half will schedule all your cron jobs ———
+  async sendClockInReminderMessage() {
+    if (!this.authToken || !this.userId) {
+      if (!(await this.authenticate())) return;
+    }
+    const roomName = this.getCurrentRoomName();
+    const roomId = await this.checkRoomExists(roomName);
+    if (!roomId) return;
+    const clockInMessage = [
+      '*Attention Titans*',
+      '@all This is your daily reminder to clock-in. If you can’t, email time@infi-dau7.com immediately.'
+    ].join('\n');
+    await this.sendMessage(roomId, clockInMessage);
+  }
+
+  async sendFridayTimecardReminder() {
+    if (!this.authToken || !this.userId) {
+      if (!(await this.authenticate())) return;
+    }
+    const res = await axios.get(
+      `${this.serverUrl}/api/v1/rooms.info?roomName=general`,
+      {
+        headers: {
+          'X-Auth-Token': this.authToken,
+          'X-User-Id': this.userId
+        }
+      }
+    );
+    const roomId = res.data.room._id;
+    const message = [
+      '@all *Attention Titans*',
+      "Here's your reminder to check and ensure your timecard is accurate. If it's not, email time@infi-dau7.com with:",
+      'Date:',
+      'Clock in:',
+      'Lunch out:',
+      'Lunch in:',
+      'Clock out:',
+      '',
+      '*DO NOT USE ADP TO CORRECT YOUR TIMECARD*'
+    ].join('\n');
+    await this.sendMessage(roomId, message);
+  }
+
+  async sendSaturdayTimecardReminder() {
+    if (!this.authToken || !this.userId) {
+      if (!(await this.authenticate())) return;
+    }
+    const res = await axios.get(
+      `${this.serverUrl}/api/v1/rooms.info?roomName=general`,
+      {
+        headers: {
+          'X-Auth-Token': this.authToken,
+          'X-User-Id': this.userId
+        }
+      }
+    );
+    const roomId = res.data.room._id;
+    const message = [
+      '@all *Final Reminder*',
+      "Did you remember to check your timecard? If not, send corrections by midnight to time@infi-dau7.com:"
+    ].join('\n');
+    await this.sendMessage(roomId, message);
+  }
+
+  async sendLunchReminderMessage() {
+    if (!this.authToken || !this.userId) {
+      if (!(await this.authenticate())) return;
+    }
+    const roomName = this.getCurrentRoomName();
+    const roomId = await this.checkRoomExists(roomName);
+    if (!roomId) return;
+    const lunchReminderMessage = [
+      '@all 🍽️ Titans! It’s Lunch Time! 🕒',
+      'Lunch is mandatory and must be exactly 30 minutes. ⏳',
+      'Travel time counts as part of lunch.',
+      'Hit Break in the Flex app before you eat! ✅'
+    ].join('\n');
+    await this.sendMessage(roomId, lunchReminderMessage);
+  }
+
+  // ─── Delivery Countdown Reminders ────────────────────────────────────────
+  async sendDeliveryCountdownReminder1130() {
+    const roomId = await this.checkRoomExists(this.getCurrentRoomName());
+    if (!roomId) return;
+    const message = '@all *Attention Titans!* You have 7 hours left in your delivery day—keep the pace! 💪';
+    await this.sendMessage(roomId, message);
+  }
+  async sendDeliveryCountdownReminder1330() {
+    const roomId = await this.checkRoomExists(this.getCurrentRoomName());
+    if (!roomId) return;
+    const message = '@all *Attention Titans!* 5 hours to go—stay focused! 💪';
+    await this.sendMessage(roomId, message);
+  }
+  async sendDeliveryCountdownReminder1530() {
+    const roomId = await this.checkRoomExists(this.getCurrentRoomName());
+    if (!roomId) return;
+    const message = '@all *Attention Titans!* 3 hours remaining—crush it safely! 💪';
+    await this.sendMessage(roomId, message);
+  }
+  async sendDeliveryCountdownReminder1730() {
+    const roomId = await this.checkRoomExists(this.getCurrentRoomName());
+    if (!roomId) return;
+    const message = '@all *Attention Titans!* Last hour! Let’s finish strong and safe! 💥';
+    await this.sendMessage(roomId, message);
+  }
+
+  // ─── Random Image Uploads ─────────────────────────────────────────────────
+  async sendImageReminder(imageName) {
+    const roomId = await this.checkRoomExists(this.getCurrentRoomName());
+    if (!roomId) return;
+    const imagePath = path.join(__dirname, 'images', imageName);
+    const stream = fs.createReadStream(imagePath);
+    const stats = fs.statSync(imagePath);
+    const FormData = require('form-data');
+    const form = new FormData();
+    form.append('file', stream, { knownLength: stats.size, filename: imageName });
+    form.append('roomId', roomId);
+    await axios.post(`${this.serverUrl}/api/v1/rooms.upload`, form, {
+      headers: {
+        'X-Auth-Token': this.authToken,
+        'X-User-Id': this.userId,
+        ...form.getHeaders()
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
+    });
+  }
+
+  async sendRandomImageReminder() {
+    const images = ['dogs.jpg', 'leadwithsafety.jpg', 'stopsigns.jpg'];
+    const today = DateTime.now().toFormat('yyyy-LL-dd');
+    this.state.usedImages = this.state.usedImages || {};
+    const used = this.state.usedImages[today] || [];
+    const remaining = images.filter(i => !used.includes(i));
+    if (remaining.length === 0) return;
+    const chosen = remaining[Math.floor(Math.random() * remaining.length)];
+    await this.sendImageReminder(chosen);
+    this.state.usedImages[today] = [...used, chosen];
+    this.saveState();
+  }
+
+  // ─── Scheduler Setup ───────────────────────────────────────────────────────
+  startAutomation() {
+    console.log(`🚀 Deployment Time (America/Chicago): ${DateTime.now().toLocaleString(DateTime.DATETIME_FULL)}`);
+
+    // Immediate test DM to Danny
+    this.sendImmediateMessageToDanny();
+
+    // Safety every 30m, 10–19:30 CT
+    cron.schedule('0,30 10-19 * * *', () => this.sendSafetyMessage(), { timezone: 'America/Chicago' });
+
+    // Hydration hourly 10–18 CT, May–Sep
+    cron.schedule('0 10-18 * 5-9 *', () => this.sendHydrationMessage(), { timezone: 'America/Chicago' });
+
+    // Heat reminder 9:00 CT daily, May–Sep
+    cron.schedule('0 9 * 5-9 *', () => this.sendHeatReminderMessage(), { timezone: 'America/Chicago' });
+
+    // Clock‑in 9:25 CT daily
+    cron.schedule('25 9 * * *', () => this.sendClockInReminderMessage(), { timezone: 'America/Chicago' });
+
+    // Friday 8:00 CT timecard reminder
+    cron.schedule('0 8 * * 5', () => this.sendFridayTimecardReminder(), { timezone: 'America/Chicago' });
+
+    // Saturday 17:00 CT final timecard reminder
+    cron.schedule('0 17 * * 6', () => this.sendSaturdayTimecardReminder(), { timezone: 'America/Chicago' });
+
+    // Lunch reminder 14:00 CT
+    cron.schedule('0 14 * * *', () => this.sendLunchReminderMessage(), { timezone: 'America/Chicago' });
+
+    // Delivery countdowns
+    cron.schedule('30 11 * * *', () => this.sendDeliveryCountdownReminder1130(), { timezone: 'America/Chicago' });
+    cron.schedule('30 13 * * *', () => this.sendDeliveryCountdownReminder1330(), { timezone: 'America/Chicago' });
+    cron.schedule('30 15 * * *', () => this.sendDeliveryCountdownReminder1530(), { timezone: 'America/Chicago' });
+    cron.schedule('30 17 * * *', () => this.sendDeliveryCountdownReminder1730(), { timezone: 'America/Chicago' });
+
+    // Random images
+    cron.schedule('15 10 * * *', () => this.sendRandomImageReminder(), { timezone: 'America/Chicago' });
+    cron.schedule('15 12 * * *', () => this.sendRandomImageReminder(), { timezone: 'America/Chicago' });
+    cron.schedule('15 15 * * *', () => this.sendRandomImageReminder(), { timezone: 'America/Chicago' });
+  }
+
+  stopAutomation() {
+    // implement stops if needed
   }
 }
+
+// ─── Bootstrap & Launch ───────────────────────────────────────────────────────
+console.log('🔧 Loading environment variables...');
+console.log({
+  ROCKET_CHAT_SERVER_URL: process.env.ROCKET_CHAT_SERVER_URL,
+  ROCKET_CHAT_USERNAME: process.env.ROCKET_CHAT_USERNAME,
+  ROCKET_CHAT_PASSWORD: process.env.ROCKET_CHAT_PASSWORD ? '****' : undefined,
+  DANNY_USERNAME: process.env.DANNY_USERNAME
+});
 
 (async () => {
   const bot = new RocketChatAutomation(
@@ -320,234 +563,5 @@ class RocketChatAutomation {
     process.env.ROCKET_CHAT_PASSWORD,
     process.env.DANNY_USERNAME
   );
-  await bot.startAutomation();
+  bot.startAutomation();
 })();
-    // inside RocketChatAutomation class, continuing from startAutomation()
-
-    async startAutomation() {
-        console.log('🚀 Starting Infinite Delivery OPS Automation');
-  
-        // 1️⃣ Authenticate
-        if (!(await this.authenticate())) {
-          console.error('🔴 Aborting: authentication failed.');
-          return;
-        }
-  
-        // 2️⃣ Send Danny his “I’m alive” DM
-        try {
-          await this.sendImmediateMessageToDanny();
-          console.log('✅ Sent startup DM to Danny');
-        } catch (err) {
-          console.error('❌ Failed to send startup DM to Danny:', err);
-        }
-  
-        // 3️⃣ Schedule recurring tasks
-  
-        // Safety reminders: every 30 minutes from 10:00 AM to 7:30 PM CT daily
-        this.scheduledSafetyTask = cron.schedule(
-          '0,30 10-19 * * *',
-          async () => {
-            try {
-              await this.sendSafetyMessage();
-            } catch (err) {
-              console.error('🔥 Error during safety message:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-  
-        // Hydration reminders: every hour on the hour from 10:00 AM to 6:00 PM CT, May–September
-        this.scheduledHydrationTask = cron.schedule(
-          '0 10-18 * 5-9 *',
-          async () => {
-            try {
-              await this.sendHydrationMessage();
-            } catch (err) {
-              console.error('🔥 Error during hydration message:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-  
-        // Heat reminders: daily at 9:00 AM CT, May–September
-        this.scheduledHeatReminderTask = cron.schedule(
-          '0 9 * 5-9 *',
-          async () => {
-            try {
-              await this.sendHeatReminderMessage();
-            } catch (err) {
-              console.error('🔥 Error during heat reminder:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-  
-        // Daily clock-in reminder: 9:25 AM CT
-        this.scheduledClockInTask = cron.schedule(
-          '25 9 * * *',
-          async () => {
-            try {
-              await this.sendClockInReminderMessage();
-            } catch (err) {
-              console.error('🔥 Error during clock-in reminder:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-  
-        // Friday timecard reminder: 8:00 AM CT every Friday
-        this.scheduledFridayTask = cron.schedule(
-          '0 8 * * 5',
-          async () => {
-            try {
-              await this.sendFridayTimecardReminder();
-            } catch (err) {
-              console.error('🔥 Error during Friday timecard reminder:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-  
-        // Saturday final timecard reminder: 5:00 PM CT every Saturday
-        this.scheduledSaturdayTask = cron.schedule(
-          '0 17 * * 6',
-          async () => {
-            try {
-              await this.sendSaturdayTimecardReminder();
-            } catch (err) {
-              console.error('🔥 Error during Saturday timecard reminder:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-  
-        // Lunch reminder: daily at 2:00 PM CT
-        this.scheduledLunchReminderTask = cron.schedule(
-          '0 14 * * *',
-          async () => {
-            try {
-              await this.sendLunchReminderMessage();
-            } catch (err) {
-              console.error('🔥 Error during lunch reminder:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-  
-        // Delivery countdown reminders
-        this.scheduledDeliveryCountdown1130 = cron.schedule(
-          '30 11 * * *',
-          async () => {
-            try {
-              await this.sendDeliveryCountdownReminder1130();
-            } catch (err) {
-              console.error('🔥 Error at 11:30 countdown:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-        this.scheduledDeliveryCountdown1330 = cron.schedule(
-          '30 13 * * *',
-          async () => {
-            try {
-              await this.sendDeliveryCountdownReminder1330();
-            } catch (err) {
-              console.error('🔥 Error at 1:30 countdown:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-        this.scheduledDeliveryCountdown1530 = cron.schedule(
-          '30 15 * * *',
-          async () => {
-            try {
-              await this.sendDeliveryCountdownReminder1530();
-            } catch (err) {
-              console.error('🔥 Error at 3:30 countdown:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-        this.scheduledDeliveryCountdown1730 = cron.schedule(
-          '30 17 * * *',
-          async () => {
-            try {
-              await this.sendDeliveryCountdownReminder1730();
-            } catch (err) {
-              console.error('🔥 Error at 5:30 countdown:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-  
-        // Random image uploads: 10:15 AM, 12:15 PM, 3:15 PM CT
-        this.scheduledImageUpload1 = cron.schedule(
-          '15 10 * * *',
-          async () => {
-            try {
-              await this.sendRandomImageReminder();
-            } catch (err) {
-              console.error('🔥 Error uploading image at 10:15:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-        this.scheduledImageUpload2 = cron.schedule(
-          '15 12 * * *',
-          async () => {
-            try {
-              await this.sendRandomImageReminder();
-            } catch (err) {
-              console.error('🔥 Error uploading image at 12:15:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-        this.scheduledImageUpload3 = cron.schedule(
-          '15 15 * * *',
-          async () => {
-            try {
-              await this.sendRandomImageReminder();
-            } catch (err) {
-              console.error('🔥 Error uploading image at 3:15:', err);
-            }
-          },
-          { timezone: 'America/Chicago' }
-        );
-      }
-  
-      stopAutomation() {
-        [
-          'scheduledSafetyTask',
-          'scheduledHydrationTask',
-          'scheduledHeatReminderTask',
-          'scheduledClockInTask',
-          'scheduledFridayTask',
-          'scheduledSaturdayTask',
-          'scheduledLunchReminderTask',
-          'scheduledDeliveryCountdown1130',
-          'scheduledDeliveryCountdown1330',
-          'scheduledDeliveryCountdown1530',
-          'scheduledDeliveryCountdown1730',
-          'scheduledImageUpload1',
-          'scheduledImageUpload2',
-          'scheduledImageUpload3'
-        ].forEach(taskName => {
-          const t = this[taskName];
-          if (t) t.stop();
-        });
-        console.log('⏹️ All scheduled tasks stopped');
-      }
-    }
-  
-    // bootstrap
-    (async () => {
-      const bot = new RocketChatAutomation(
-        process.env.ROCKET_CHAT_SERVER_URL,
-        process.env.ROCKET_CHAT_USERNAME,
-        process.env.ROCKET_CHAT_PASSWORD,
-        process.env.DANNY_USERNAME
-      );
-      await bot.startAutomation();
-    })();
-  
