@@ -369,6 +369,7 @@ class RocketChatAutomation {
     const msg = `@all *Attention Titans!*\n\nYou have 7 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and complete all deliveries before 6:30pm to avoid breaking our promise. You got this! 💪`;
     await this.sendMessage(roomId, msg);
   }
+
   async sendDeliveryCountdownReminder1330() {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
@@ -376,6 +377,7 @@ class RocketChatAutomation {
     const msg = `@all *Attention Titans!*\n\nYou have 5 hours and 0 minutes left in your delivery day. Keep up the pace! 💪`;
     await this.sendMessage(roomId, msg);
   }
+
   async sendDeliveryCountdownReminder1530() {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
@@ -383,6 +385,7 @@ class RocketChatAutomation {
     const msg = `@all *Attention Titans!*\n\nYou have 3 hours and 0 minutes left in your delivery day. Let’s finish strong! 💪`;
     await this.sendMessage(roomId, msg);
   }
+
   async sendDeliveryCountdownReminder1730() {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
@@ -406,6 +409,7 @@ class RocketChatAutomation {
       maxBodyLength: Infinity
     });
   }
+
   async sendRandomImageReminder() {
     const images = ['dogs.jpg', 'leadwithsafety.jpg', 'stopsigns.jpg'];
     const today = this.getToday();
@@ -417,6 +421,7 @@ class RocketChatAutomation {
     (this.state.usedImages[today] = this.state.usedImages[today] || []).push(choice);
     this.saveState();
   }
+
   getToday() {
     return DateTime.now().setZone('America/Chicago').toFormat('yyyy-MM-dd');
   }
@@ -434,6 +439,19 @@ Pacing is essential. Ideally, no stop should take more than 2 minutes to complet
 Encountering a problem with a stop that can't be solved quickly? ⌛ It may be better to skip that stop and move on. Don't endanger your whole route for the sake of one stop.
 
 You are responsible for your own routes. 💪`;
+    await this.sendMessage(roomId, msg);
+  }
+
+  // --- New early-break reminder message (sends at 9:40am) ---
+  async sendEarlyBreakReminderMessage() {
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentRoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForToday(room)) return;
+    const msg = `If you stopping before your first delivery then your are using your first break!
+This means stopping for the restroom, food, or drinks. Come prepared.
+You are expected to be at your first delivery by a certain time. You are putting yourself behind if you stop before then.
+⏰  ❗`;
     await this.sendMessage(roomId, msg);
   }
   // Start all cron schedules
@@ -459,6 +477,9 @@ You are responsible for your own routes. 💪`;
     cron.schedule('15 9 * * *', () => this.sendPacingReminderMessage(), { timezone: 'America/Chicago' });
     cron.schedule('15 13 * * *', () => this.sendPacingReminderMessage(), { timezone: 'America/Chicago' });
     cron.schedule('15 16 * * *', () => this.sendPacingReminderMessage(), { timezone: 'America/Chicago' });
+
+    // Early break reminder: 9:40 daily
+    cron.schedule('40 9 * * *', () => this.sendEarlyBreakReminderMessage(), { timezone: 'America/Chicago' });
 
     // Friday 8:00 → timecard
     cron.schedule('0 8 * * 5', () => this.sendFridayTimecardReminder(), { timezone: 'America/Chicago' });
