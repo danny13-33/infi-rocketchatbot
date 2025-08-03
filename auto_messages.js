@@ -451,7 +451,7 @@ You are responsible for your own routes. 💪`;
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `If you stopping before your first delivery then your are using your first break!
+    const msg = `If you're stopping before your first delivery then your are using your first break!
 This means stopping for the restroom, food, or drinks. Come prepared.
 You are expected to be at your first delivery by a certain time. You are putting yourself behind if you stop before then.
 ⏰  ❗`;
