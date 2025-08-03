@@ -158,7 +158,7 @@ class RocketChatAutomation {
 
       `📌 Reminder: Try to avoid reversing whenever possible. If you must reverse, do not exceed 5 MPH — this triggers Netradyne alerts and, more importantly, helps keep you and others safe. 🚸
 
-       Also, avoid parking on driveways. If you can see the front door from the street, there’s no need to pull into someone’s property. 🏠
+       Also, avoid parking on driveways. If you can see the front door from the street, there’s no need to pull into someone’s property. �🏠
        
        Let’s stay safe and smart out there!`
     ];
@@ -259,14 +259,17 @@ class RocketChatAutomation {
   isBusinessHours() {
     const now = DateTime.now().setZone('America/Chicago');
     const mins = now.hour * 60 + now.minute;
-    return mins >= 600 && mins <= 1170;
+    return mins >= 600 && mins <= 1170; // 10:00 – 19:30
   }
   isRoomForToday(name) {
     return name === this.getCurrentRoomName();
   }
 
+  // --- Modified to never repeat in the same day ---
   async sendSafetyMessage() {
     if (!this.isBusinessHours()) return;
+    // if we've sent all safety messages today, skip
+    if (this.messageIndex >= this.dailyOrder.length) return;
     if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
@@ -279,7 +282,6 @@ class RocketChatAutomation {
     this.saveState();
     await this.sendMessage(roomId, msg);
   }
-
   async sendHydrationMessage() {
     const now = DateTime.now().setZone('America/Chicago');
     if (now.month < 5 || now.month > 9) return;
@@ -319,6 +321,7 @@ class RocketChatAutomation {
     );
     return res.data.room._id;
   }
+
   async sendImmediateMessageToDanny() {
     if (!this.authToken && !(await this.authenticate())) return;
     const dmId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
@@ -454,6 +457,7 @@ You are expected to be at your first delivery by a certain time. You are putting
 ⏰  ❗`;
     await this.sendMessage(roomId, msg);
   }
+
   // Start all cron schedules
   startAutomation() {
     console.log(`🚀 Starting Automation at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`);
