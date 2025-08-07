@@ -81,7 +81,7 @@ class RocketChatAutomation {
 
        :point_right:  Remember to always wear your seatbelt when the vehicle is moving and
        only use your device when the vehicle is sitting still!  
-       :point_left: Watch your speeds and let's have a great day today!`,
+       :point_left: Watch your speeds and let’s have a great day today!`,
 
       `:truck: :dash: :dash: *Speeding*  
        Speeding is one of the most common causes of accidents on the road.  
@@ -92,7 +92,7 @@ class RocketChatAutomation {
 
       `:truck:  :dash:  :eyes: *Make sure you keep an eye on your speed while delivering today!* 
        If you're in doubt about what the speed limit is, drive slower than you think it is. Always
-       follow signs over what the GPS says the limit is. Let's keep today safe and finish Strong.`,
+       follow signs over what the GPS says the limit is. Let’s keep today safe and finish Strong.`,
 
       `Water is very important to your body's health. Hydration should be a top
        priority every time you know that you are scheduled to come in. Come to work
@@ -120,7 +120,7 @@ class RocketChatAutomation {
       `:traffic_light: *Traffic Lights* :traffic_light:  
        Someone runs a red light on average every 20 minutes at urban intersections.  
        Traffic Lights are placed at intersections to help maintain a safe flow of traffic & maintain the safety of yourself & others while on the road.  
-       Approaching a light & it's turning yellow? Safely come to a stop before entering the intersection.  
+       Approaching a light & it's turning yellow? Safely come to stop before entering the intersection.  
        *COME TO A STOP when the light turns yellow. DON'T TRY TO BEAT THE LIGHT!*`,
 
       `:exclamation: TITANS, at no point throughout your route should you be delivering with ANY door (driver side, sliding, or back door) open.
@@ -158,7 +158,7 @@ class RocketChatAutomation {
 
       `📌 Reminder: Try to avoid reversing whenever possible. If you must reverse, do not exceed 5 MPH — this triggers Netradyne alerts and, more importantly, helps keep you and others safe. 🚸
 
-       Also, avoid parking on driveways. If you can see the front door from the street, there’s no need to pull into someone’s property. �🏠
+       Also, avoid parking on driveways. If you can see the front door from the street, there’s no need to pull into someone’s property. 🏠
        
        Let’s stay safe and smart out there!`
     ];
@@ -222,6 +222,7 @@ class RocketChatAutomation {
     const suffix = this.getOrdinalSuffix(now.day);
     return `${now.monthLong}-${now.day}${suffix}-${now.year}`;
   }
+
   getOrdinalSuffix(d) {
     if (d >= 11 && d <= 13) return 'th';
     switch (d % 10) {
@@ -259,16 +260,15 @@ class RocketChatAutomation {
   isBusinessHours() {
     const now = DateTime.now().setZone('America/Chicago');
     const mins = now.hour * 60 + now.minute;
-    return mins >= 600 && mins <= 1170; // 10:00 – 19:30
+    return mins >= 600 && mins <= 1170; // 10:00 - 19:30
   }
+
   isRoomForToday(name) {
     return name === this.getCurrentRoomName();
   }
 
-  // --- Modified to never repeat in the same day ---
   async sendSafetyMessage() {
     if (!this.isBusinessHours()) return;
-    // if we've sent all safety messages today, skip
     if (this.messageIndex >= this.dailyOrder.length) return;
     if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
@@ -282,6 +282,7 @@ class RocketChatAutomation {
     this.saveState();
     await this.sendMessage(roomId, msg);
   }
+
   async sendHydrationMessage() {
     const now = DateTime.now().setZone('America/Chicago');
     if (now.month < 5 || now.month > 9) return;
@@ -311,22 +312,6 @@ class RocketChatAutomation {
     if (!roomId || !this.isRoomForToday(room)) return;
     const text = `*Attention Titans*\n@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in send an email to time@infi-dau7.com immediately.  Thank you!`;
     await this.sendMessage(roomId, text);
-  }
-
-  async getOrCreateDirectMessageRoom(user) {
-    const res = await axios.post(
-      `${this.serverUrl}/api/v1/im.create`,
-      { username: user },
-      { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
-    );
-    return res.data.room._id;
-  }
-
-  async sendImmediateMessageToDanny() {
-    if (!this.authToken && !(await this.authenticate())) return;
-    const dmId = await this.getOrCreateDirectMessageRoom(this.dannyUsername);
-    if (!dmId) return;
-    await this.sendMessage(dmId, `✅ Safety Automation Deployed Successfully.\nThis is your immediate test message, Danny.`);
   }
 
   async sendFridayTimecardReminder() {
@@ -369,7 +354,8 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans!*\n\nYou have 7 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and complete all deliveries before 6:30pm to avoid breaking our promise. You got this! 💪`;
+    const msg = `@all *Attention Titans!*\
+    \n\nYou have 7 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and complete all deliveries before 6:30pm to avoid breaking our promise. You got this! 💪`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -377,7 +363,8 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans!*\n\nYou have 5 hours and 0 minutes left in your delivery day. Keep up the pace! 💪`;
+    const msg = `@all *Attention Titans!*\
+    \n\nYou have 5 hours and 0 minutes left in your delivery day. Keep up the pace! 💪`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -385,7 +372,8 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans!*\n\nYou have 3 hours and 0 minutes left in your delivery day. Let’s finish strong! 💪`;
+    const msg = `@all *Attention Titans!*\
+    \n\nYou have 3 hours and 0 minutes left in your delivery day. Let’s finish strong! 💪`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -397,34 +385,52 @@ class RocketChatAutomation {
     await this.sendMessage(roomId, msg);
   }
 
+  // Updated sendImageReminder with error handling
   async sendImageReminder(imageName) {
-    const room = this.getCurrentRoomName();
-    const roomId = await this.checkRoomExists(room);
-    if (!roomId || !this.isRoomForToday(room)) return;
-    const imgPath = path.join(__dirname, 'images', imageName);
-    const stats = fs.statSync(imgPath);
-    const form = new FormData();
-    form.append('file', fs.createReadStream(imgPath), { knownLength: stats.size, filename: imageName });
-    form.append('roomId', roomId);
-    await axios.post(`${this.serverUrl}/api/v1/rooms.upload`, form, {
-      headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId, ...form.getHeaders() },
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity
-    });
+    try {
+      const room = this.getCurrentRoomName();
+      const roomId = await this.checkRoomExists(room);
+      if (!roomId || !this.isRoomForToday(room)) return;
+      const imgPath = path.join(__dirname, 'images', imageName);
+      const stats = fs.statSync(imgPath);
+      const form = new FormData();
+      form.append('file', fs.createReadStream(imgPath), { knownLength: stats.size, filename: imageName });
+      form.append('roomId', roomId);
+      await axios.post(
+        `${this.serverUrl}/api/v1/rooms.upload`,
+        form,
+        {
+          headers: {
+            'X-Auth-Token': this.authToken,
+            'X-User-Id': this.userId,
+            ...form.getHeaders()
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
+        }
+      );
+    } catch (err) {
+      console.error(`❌ sendImageReminder failed for ${imageName}:`, err.message);
+    }
   }
 
+  // Updated sendRandomImageReminder with error handling
   async sendRandomImageReminder() {
-    const images = ['dogs.jpg', 'leadwithsafety.jpg', 'stopsigns.jpg'];
-    const today = this.getToday();
-    const used = this.state.usedImages[today] || [];
-    const avail = images.filter(i => !used.includes(i));
-    if (!avail.length) return;
-    const choice = avail[Math.floor(Math.random() * avail.length)];
-    await this.sendImageReminder(choice);
-    (this.state.usedImages[today] = this.state.usedImages[today] || []).push(choice);
-    this.saveState();
+    try {
+      const images = ['dogs.jpg', 'leadwithsafety.jpg', 'stopsigns.jpg'];
+      const today = this.getToday();
+      const used = this.state.usedImages[today] || [];
+      const avail = images.filter(i => !used.includes(i));
+      if (!avail.length) return;
+      const choice = avail[Math.floor(Math.random() * avail.length)];
+      await this.sendImageReminder(choice);
+      this.state.usedImages[today] = this.state.usedImages[today] || [];
+      this.state.usedImages[today].push(choice);
+      this.saveState();
+    } catch (err) {
+      console.error('❌ sendRandomImageReminder failed:', err.message);
+    }
   }
-
   getToday() {
     return DateTime.now().setZone('America/Chicago').toFormat('yyyy-MM-dd');
   }
@@ -526,3 +532,8 @@ You are expected to be at your first delivery by a certain time. You are putting
   );
   bot.startAutomation();
 })();
+
+// Optional: catch any unhandled promise rejections
+process.on('unhandledRejection', err => {
+  console.error('Unhandled rejection:', err);
+});
