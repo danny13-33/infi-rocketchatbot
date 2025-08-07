@@ -354,8 +354,7 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans!*\
-    \n\nYou have 7 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and complete all deliveries before 6:30pm to avoid breaking our promise. You got this! 💪`;
+    const msg = `@all *Attention Titans*\n\nYou have 7 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and complete all deliveries before 6:30pm to avoid breaking our promise. You got this! 💪`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -363,8 +362,7 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans!*\
-    \n\nYou have 5 hours and 0 minutes left in your delivery day. Keep up the pace! 💪`;
+    const msg = `@all *Attention Titans*\n\nYou have 5 hours and 0 minutes left in your delivery day. Keep up the pace! 💪`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -372,8 +370,7 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans!*\
-    \n\nYou have 3 hours and 0 minutes left in your delivery day. Let’s finish strong! 💪`;
+    const msg = `@all *Attention Titans*\n\nYou have 3 hours and 0 minutes left in your delivery day. Let’s finish strong! 💪`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -467,9 +464,6 @@ You are expected to be at your first delivery by a certain time. You are putting
   // Start all cron schedules
   startAutomation() {
     console.log(`🚀 Starting Automation at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`);
-
-    // Immediate DM test
-    this.sendImmediateMessageToDanny();
 
     // Safety: every 30m 10:00–19:30
     cron.schedule('0,30 10-19 * * *', () => this.sendSafetyMessage(), { timezone: 'America/Chicago' });
