@@ -22,7 +22,7 @@ class RocketChatAutomation {
     this.dailyOrder = [];
     this.messageIndex = 0;
 
-    // --- All safety messages preserved verbatim ---
+    // All safety messages preserved verbatim
     this.safetyMessages = [
       `:eyes: *Distracted Driving*  
        Keep your eyes on the road, check your mirrors, and glance at your GPS.  
@@ -37,9 +37,7 @@ class RocketChatAutomation {
        Distracted driving is one of the top causes of on-road accidents and puts you, other drivers, and community members at risk. Common distractions like using your phone or looking away from the road for more than a couple seconds are some of the riskiest distractions. Stay alert and focused to make every trip a safe one for you and the community.  
 
        *DO NOT HOLD YOUR PHONE WHILE DRIVING*`,
-
       `:exclamation: Amazon is not playing with Safety any longer. Any Severe Infractions will suspend your account immediately while on route. If that occurs there’s nothing we can do other than send you back to station and take immediate disciplinary action including termination. Ensure you are adhering to all Safety measures and if you see a yellow light be prepared to STOP.`,
-
       `:truck: *Watch your FOLLOWING DISTANCE Titans!*  
        You should be AT LEAST 3 van lengths behind the vehicle in front of you. This can increase depending on road conditions, your speed, and the weather. 
 
@@ -50,26 +48,20 @@ class RocketChatAutomation {
 
        Please remember to leave plenty of space in between you and the vehicle in front of you. Increasing the distance between you and the car ahead can give you the time you need to recognize a hazard, should one enter your path, and respond safely.  
        Keep at least an 8-second (3 car) distance between you and the vehicle in front of you. Slow down to give space when drivers merge. If another driver cuts you off, slow down to create distance.`,
-
       `:no_entry_sign: *NO PET ENGAGEMENT*  
        There is a strict no pet engagement policy. It doesn't matter the size or breed of the animal, PLEASE leave them alone. If there is an animal present & the customer has not already restrained them, conduct Contact Compliance.`,
-
       `If you see a dog or signs of a dog at a delivery location, you can request that the paw print icon be added by navigating to the ‘Help’ page in the Delivery App and selecting ‘Report a dog on your route.’`,
-
       `To avoid dog bites: If you see a dog present, mark it as unable to deliver due to the dog and then follow contact compliance (CC). Never get out of the van if you see a dog loose.`,
-
       `:leg: :eyes: Before you start walking to your destination, look at where you will be
        placing your feet. Don't jump in and out of the vans. Your legs are not designed to
        absorb incredible impact over and over. Use all of the steps available to you and
        try to maintain 3 points of contact. :raised_hand: 
        Rushing is when you make the most mistakes. Slow is smooth, smooth is
        fast. Find your groove and stick with it.`,
-
       `:exclamation:  :cloud_rain: On days where moisture is high, we are also at high risk for slips, trips and
        falls. Three points of contact when getting out of the vans and be highly familiar
        with your pathing today. Being safe on the road is something you are all extremely
        capable of doing, please do it!`,
-
       `:running_shirt_with_sash: Wearing a seatbelt is one of the safest things you can do to protect yourself
        when driving. Remember to always wear your seatbelt correctly — across your
        chest and waist. Never sit on your seatbelt when it is buckled.
@@ -82,23 +74,19 @@ class RocketChatAutomation {
        :point_right:  Remember to always wear your seatbelt when the vehicle is moving and
        only use your device when the vehicle is sitting still!  
        :point_left: Watch your speeds and let’s have a great day today!`,
-
       `:truck: :dash: :dash: *Speeding*  
        Speeding is one of the most common causes of accidents on the road.  
        If you are not sure of what the speed limit is, you should proceed with caution and operate at a speed that is typical for the road type and location (e.g., 25–30 mph in a neighborhood).  
        Be on the lookout for road signs indicating speed limit changes, as speeding violations are easy to avoid.  
        
        *Don't go off of what GPS tells you. Go off what the SIGNS say, because that is what the camera sees!*`,
-
       `:truck:  :dash:  :eyes: *Make sure you keep an eye on your speed while delivering today!* 
        If you're in doubt about what the speed limit is, drive slower than you think it is. Always
        follow signs over what the GPS says the limit is. Let’s keep today safe and finish Strong.`,
-
       `Water is very important to your body's health. Hydration should be a top
        priority every time you know that you are scheduled to come in. Come to work
        hydrated with plenty of supplies so you can avoid suffering from dehydration while
        you are out on your route.`,
-
       `:droplet: Please ensure that you are arriving to work hydrated with adequate water
        supply. There may be some water out on the pads, but understand that bringing
        water to work is your responsibility.
@@ -108,27 +96,22 @@ class RocketChatAutomation {
        yourself up to be a victim of dehydration.
        
        *If there is water on the pad, please be considerate of others.*`,
-
       `:stop_sign: *Stop Signs* :stop_sign:  
        Come to a complete stop at all stop signs. Stop signs are placed at intersections to protect both you & others from avoidable crashes.  
        Can't see if any oncoming traffic is coming from where the sign is placed?  
        A good practice is to make a complete stop where the sign is placed & creep forward until you can see whether any oncoming traffic is approaching. Stay Safe Titans!  
        *Stop the front of your vehicle BEHIND the stop sign for at least 2 full seconds.*`,
-
       `Keep an eye out for stop signs! You must come to a complete stop at all stop signs, this means pressing the brake completely until the van is no longer moving. Any motion before continuing will cause an alert!`,
-
       `:traffic_light: *Traffic Lights* :traffic_light:  
        Someone runs a red light on average every 20 minutes at urban intersections.  
        Traffic Lights are placed at intersections to help maintain a safe flow of traffic & maintain the safety of yourself & others while on the road.  
        Approaching a light & it's turning yellow? Safely come to stop before entering the intersection.  
        *COME TO A STOP when the light turns yellow. DON'T TRY TO BEAT THE LIGHT!*`,
-
       `:exclamation: TITANS, at no point throughout your route should you be delivering with ANY door (driver side, sliding, or back door) open.
        
        This is one of the most unsafe practices you can do while delivering.
        
        Someone can hop inside or take packages from your vehicle. Also, packages can fall out without you noticing.`,
-
       `Being vigilant is one of many important skills you can utilize while you are on route.
        
        :woman_walking: :children_crossing: :man_walking: 
@@ -137,7 +120,6 @@ class RocketChatAutomation {
        This is especially important at times like when school zones begin or end or near holidays.
 
        *Keep an eye out for an increase in traffic during the busy hours or days.*`,
-
       `:hot_face: *Hot Weather Tips* :hot_face:  
        You are responsible for your own health and showing up to work prepared.  
 
@@ -148,14 +130,12 @@ class RocketChatAutomation {
        :point_up: _Recovery_ – Don’t rely solely on meds like Ibuprofen. Recover with hydration, good food, and rest.  
 
        Practice these the day of and the night before coming into work to prevent heat-related illness.`,
-
       `:exclamation:  :world_map:  :eyes: 
        Friendly reminder to be absolutely critical with your ability to make decisions while on the road, especially when navigating through blind spots.
        
        If you are merging then look at the side view mirrors and lean forward to get a different perspective.
 
        If you are putting the van in reverse then use the mirrors, the camera, AND Get Out And Look.`,
-
       `📌 Reminder: Try to avoid reversing whenever possible. If you must reverse, do not exceed 5 MPH — this triggers Netradyne alerts and, more importantly, helps keep you and others safe. 🚸
 
        Also, avoid parking on driveways. If you can see the front door from the street, there’s no need to pull into someone’s property. 🏠
@@ -163,7 +143,6 @@ class RocketChatAutomation {
        Let’s stay safe and smart out there!`
     ];
 
-    // Initialize or reload today's shuffle
     this.loadOrInitState();
   }
 
@@ -266,7 +245,6 @@ class RocketChatAutomation {
   isRoomForToday(name) {
     return name === this.getCurrentRoomName();
   }
-
   async sendSafetyMessage() {
     if (!this.isBusinessHours()) return;
     if (this.messageIndex >= this.dailyOrder.length) return;
@@ -290,7 +268,9 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const text = `🌊HYDRATE HYDRATE HYDRATE🌊\nIf you are reading this drink water now!\nDo Not be a victim to Heat. Stay Hydrated`;
+    const text = `🌊HYDRATE HYDRATE HYDRATE🌊
+If you are reading this drink water now!
+Do Not be a victim to Heat. Stay Hydrated`;
     await this.sendMessage(roomId, text);
   }
 
@@ -301,7 +281,15 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const text = `@all ⚠️ Attention Titans! ⚠️\n\nAs always, we're reminding you that the Texas heat is no joke, especially during the peak summer months. That’s why we strongly encourage you to knock out more than half of your route by 2 PM. It’s absolutely achievable if you start strong and stay focused.\n\nBy hustling early, you’ll give yourself the chance to slow down and cool off when the heat is at its worst. The secret to success out here? Keep moving, stay organized, and manage your time wisely.\n\nWe believe in every single one of you, but more importantly, you’ve got to believe in yourself. Let’s stay safe, stay smart, and crush it out there.\n\nYou’ve got this Titans! 💪🔥`;
+    const text = `@all ⚠️ Attention Titans! ⚠️
+
+As always, we're reminding you that the Texas heat is no joke, especially during the peak summer months. That’s why we strongly encourage you to knock out more than half of your route by 2 PM. It’s absolutely achievable if you start strong and stay focused.
+
+By hustling early, you’ll give yourself the chance to slow down and cool off when the heat is at its worst. The secret to success out here? Keep moving, stay organized, and manage your time wisely.
+
+We believe in every single one of you, but more importantly, you’ve got to believe in yourself. Let’s stay safe, stay smart, and crush it out there.
+
+You’ve got this Titans! 💪🔥`;
     await this.sendMessage(roomId, text);
   }
 
@@ -310,25 +298,46 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const text = `*Attention Titans*\n@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in send an email to time@infi-dau7.com immediately.  Thank you!`;
+    const text = `*Attention Titans*
+@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in send an email to time@infi-dau7.com immediately. Thank you!`;
     await this.sendMessage(roomId, text);
   }
 
   async sendFridayTimecardReminder() {
     if (!this.authToken && !(await this.authenticate())) return;
-    const res = await axios.get(`${this.serverUrl}/api/v1/rooms.info?roomName=general`,
-      { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } });
+    const res = await axios.get(`${this.serverUrl}/api/v1/rooms.info?roomName=general`, {
+      headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId }
+    });
     const roomId = res.data.room._id;
-    const msg = `@all *Attention Titans*\nHere's your reminder for you to check and ensure your timecard is accurate.  If it's not accurate or you missed a timecard punch please send an email to time@infi-dau7.com and follow this format when sending the email:\n\nDate:\nClock in:\nLunch out:\nLunch in:\nClock out:\n\n*DO NOT USE ADP TO CORRECT YOUR TIMECARD THAT FEATURE DOES NOT WORK*`;
+    const msg = `@all *Attention Titans*
+Here's your reminder for you to check and ensure your timecard is accurate. If it's not accurate or you missed a timecard punch please send an email to time@infi-dau7.com and follow this format when sending the email:
+
+Date:
+Clock in:
+Lunch out:
+Lunch in:
+Clock out:
+
+*DO NOT USE ADP TO CORRECT YOUR TIMECARD THAT FEATURE DOES NOT WORK*`;
     await this.sendMessage(roomId, msg);
   }
 
   async sendSaturdayTimecardReminder() {
     if (!this.authToken && !(await this.authenticate())) return;
-    const res = await axios.get(`${this.serverUrl}/api/v1/rooms.info?roomName=general`,
-      { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } });
+    const res = await axios.get(`${this.serverUrl}/api/v1/rooms.info?roomName=general`, {
+      headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId }
+    });
     const roomId = res.data.room._id;
-    const msg = `@all *Final Reminder*\nDid you remember to check your timecard? If you haven't now's the time to do so.  All timecard corrections should be sent in no later than midnight tonight.  If you need corrections please send an email to time@infi-dau7.com in this format:\n\nDate:\nClock in:\nLunch out:\nLunch in:\nClock out:\n\n*DO NOT USE ADP TO CORRECT YOUR TIMECARD THAT FEATURE DOES NOT WORK*`;
+    const msg = `@all *Final Reminder*
+Did you remember to check your timecard? If you haven't now's the time to do so. All timecard corrections should be sent in no later than midnight tonight. If you need corrections please send an email to time@infi-dau7.com in this format:
+
+Date:
+Clock in:
+Lunch out:
+Lunch in:
+Clock out:
+
+*DO NOT USE ADP TO CORRECT YOUR TIMECARD THAT FEATURE DOES NOT WORK*`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -337,7 +346,16 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `:pushpin: RTS Reminders  :pushpin: @all\n\n*Before you RTS*  :arrow_down:\n🔎 Check your van for any missorts or missing packages 📦 before you RTS. Missing packages must be reattempted, and missorts must be delivered if they are within a 15-minute radius.\n\n*Parking at Station*  :blue_car:\nClean out your van! Take your trash🗑, wipe it down  :sponge:, and sweep it out. 🧹 You may not be in the same van tomorrow. Do not leave your mess for someone else.  :do_not_litter:\n\n*Equipment turn in*  :bulb:\nWhen you turn in your bag at the end of the night, check it thoroughly. Ensure the work device 📱, gas card 💳, keys 🔑, and portable charger 🔋 are inside. Remember to wait the full 2 minutes for your post trip on standard vehicles and 3 minutes on step vans, and be certain you've clocked out before leaving.  :clock8:`;
+    const msg = `:pushpin: RTS Reminders  :pushpin: @all
+
+*Before you RTS*  :arrow_down:
+🔎 Check your van for any missorts or missing packages 📦 before you RTS. Missing packages must be reattempted, and missorts must be delivered if they are within a 15-minute radius.
+
+*Parking at Station*  :blue_car:
+Clean out your van! Take your trash🗑, wipe it down  :sponge:, and sweep it out. 🧹 You may not be in the same van tomorrow. Do not leave your mess for someone else.  :do_not_litter:
+
+*Equipment turn in*  :bulb:
+When you turn in your bag at the end of the night, check it thoroughly. Ensure the work device 📱, gas card 💳, keys 🔑, and portable charger 🔋 are inside. Remember to wait the full 2 minutes for your post trip on standard vehicles and 3 minutes on step vans, and be certain you've clocked out before leaving.  :clock8:`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -346,7 +364,15 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all 🍽️ Titans! It's Lunch Time! 🕒\n\nJust a quick reminder — lunches are mandatory and must be exactly 30 minutes. ⏳\n➡️ No more, no less.\n❌ You cannot combine lunch with your breaks.\n🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.\n\nDon’t forget to hit that Break button in the Flex app before you dig in! ✅\nEnjoy your lunch and recharge! 💪🥗🍔`;
+    const msg = `@all 🍽️ Titans! It's Lunch Time! 🕒
+
+Just a quick reminder — lunches are mandatory and must be exactly 30 minutes. ⏳
+➡️ No more, no less.
+❌ You cannot combine lunch with your breaks.
+🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.
+
+Don’t forget to hit that Break button in the Flex app before you dig in! ✅
+Enjoy your lunch and recharge! 💪🥗🍔`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -354,7 +380,9 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans*\n\nYou have 7 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and complete all deliveries before 6:30pm to avoid breaking our promise. You got this! 💪`;
+    const msg = `@all *Attention Titans*
+
+You have 7 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and complete all deliveries before 6:30pm to avoid breaking our promise. You got this! 💪`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -362,7 +390,9 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans*\n\nYou have 5 hours and 0 minutes left in your delivery day. Keep up the pace! 💪`;
+    const msg = `@all *Attention Titans*
+
+You have 5 hours and 0 minutes left in your delivery day. Keep up the pace! 💪`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -370,7 +400,9 @@ class RocketChatAutomation {
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans*\n\nYou have 3 hours and 0 minutes left in your delivery day. Let’s finish strong! 💪`;
+    const msg = `@all *Attention Titans*
+
+You have 3 hours and 0 minutes left in your delivery day. Let’s finish strong! 💪`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -382,7 +414,6 @@ class RocketChatAutomation {
     await this.sendMessage(roomId, msg);
   }
 
-  // Updated sendImageReminder with error handling
   async sendImageReminder(imageName) {
     try {
       const room = this.getCurrentRoomName();
@@ -391,7 +422,10 @@ class RocketChatAutomation {
       const imgPath = path.join(__dirname, 'images', imageName);
       const stats = fs.statSync(imgPath);
       const form = new FormData();
-      form.append('file', fs.createReadStream(imgPath), { knownLength: stats.size, filename: imageName });
+      form.append('file', fs.createReadStream(imgPath), {
+        knownLength: stats.size,
+        filename: imageName
+      });
       form.append('roomId', roomId);
       await axios.post(
         `${this.serverUrl}/api/v1/rooms.upload`,
@@ -411,7 +445,6 @@ class RocketChatAutomation {
     }
   }
 
-  // Updated sendRandomImageReminder with error handling
   async sendRandomImageReminder() {
     try {
       const images = ['dogs.jpg', 'leadwithsafety.jpg', 'stopsigns.jpg'];
@@ -432,7 +465,6 @@ class RocketChatAutomation {
     return DateTime.now().setZone('America/Chicago').toFormat('yyyy-MM-dd');
   }
 
-  // --- New pacing reminder message ---
   async sendPacingReminderMessage() {
     if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
@@ -448,7 +480,6 @@ You are responsible for your own routes. 💪`;
     await this.sendMessage(roomId, msg);
   }
 
-  // --- New early-break reminder message (sends at 9:40am) ---
   async sendEarlyBreakReminderMessage() {
     if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
@@ -461,62 +492,50 @@ You are expected to be at your first delivery by a certain time. You are putting
     await this.sendMessage(roomId, msg);
   }
 
-  // Start all cron schedules
+  async sendImmediateMessageToDanny() {
+    if (!this.authToken && !(await this.authenticate())) return;
+    // create or get DM with Danny
+    const res = await axios.post(
+      `${this.serverUrl}/api/v1/im.create`,
+      { username: this.dannyUsername },
+      { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+    );
+    const roomId = res.data.room._id;
+    const text = `🤖 Automation launched at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`;
+    await this.sendMessage(roomId, text);
+  }
+
   startAutomation() {
     console.log(`🚀 Starting Automation at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`);
+    this.sendImmediateMessageToDanny();
 
-    // Safety: every 30m 10:00–19:30
     cron.schedule('0,30 10-19 * * *', () => this.sendSafetyMessage(), { timezone: 'America/Chicago' });
-
-    // Hydration: hourly 10–18, May–Sep
     cron.schedule('0 10-18 * 5-9 *', () => this.sendHydrationMessage(), { timezone: 'America/Chicago' });
-
-    // Heat reminder: 9:00 daily, May–Sep
     cron.schedule('0 9 * 5-9 *', () => this.sendHeatReminderMessage(), { timezone: 'America/Chicago' });
-
-    // Clock-in: 9:25 daily
     cron.schedule('25 9 * * *', () => this.sendClockInReminderMessage(), { timezone: 'America/Chicago' });
-
-    // Pacing reminders: 9:15, 13:15, 16:15 daily
     cron.schedule('15 9 * * *', () => this.sendPacingReminderMessage(), { timezone: 'America/Chicago' });
+    cron.schedule('40 9 * * *', () => this.sendEarlyBreakReminderMessage(), { timezone: 'America/Chicago' });
     cron.schedule('15 13 * * *', () => this.sendPacingReminderMessage(), { timezone: 'America/Chicago' });
     cron.schedule('15 16 * * *', () => this.sendPacingReminderMessage(), { timezone: 'America/Chicago' });
-
-    // Early break reminder: 9:40 daily
-    cron.schedule('40 9 * * *', () => this.sendEarlyBreakReminderMessage(), { timezone: 'America/Chicago' });
-
-    // Friday 8:00 → timecard
     cron.schedule('0 8 * * 5', () => this.sendFridayTimecardReminder(), { timezone: 'America/Chicago' });
-
-    // Saturday 17:00 → final timecard
     cron.schedule('0 17 * * 6', () => this.sendSaturdayTimecardReminder(), { timezone: 'America/Chicago' });
-
-    // RTS: 18:00 daily
     cron.schedule('0 18 * * *', () => this.sendRtsReminderMessage(), { timezone: 'America/Chicago' });
-
-    // Lunch: 14:00 daily
     cron.schedule('0 14 * * *', () => this.sendLunchReminderMessage(), { timezone: 'America/Chicago' });
-
-    // Delivery countdowns
     cron.schedule('30 11 * * *', () => this.sendDeliveryCountdownReminder1130(), { timezone: 'America/Chicago' });
     cron.schedule('30 13 * * *', () => this.sendDeliveryCountdownReminder1330(), { timezone: 'America/Chicago' });
     cron.schedule('30 15 * * *', () => this.sendDeliveryCountdownReminder1530(), { timezone: 'America/Chicago' });
     cron.schedule('30 17 * * *', () => this.sendDeliveryCountdownReminder1730(), { timezone: 'America/Chicago' });
-
-    // Random images: 10:15, 12:15, 15:15
     cron.schedule('15 10 * * *', () => this.sendRandomImageReminder(), { timezone: 'America/Chicago' });
     cron.schedule('15 12 * * *', () => this.sendRandomImageReminder(), { timezone: 'America/Chicago' });
     cron.schedule('15 15 * * *', () => this.sendRandomImageReminder(), { timezone: 'America/Chicago' });
   }
 
-  // Stop all schedules
   stopAutomation() {
     cron.getTasks().forEach(t => t.stop());
     console.log('⏹️ All automations stopped');
   }
 }
 
-// Launch the bot
 (async () => {
   const bot = new RocketChatAutomation(
     process.env.ROCKET_CHAT_SERVER_URL,
@@ -527,7 +546,6 @@ You are expected to be at your first delivery by a certain time. You are putting
   bot.startAutomation();
 })();
 
-// Optional: catch any unhandled promise rejections
 process.on('unhandledRejection', err => {
   console.error('Unhandled rejection:', err);
 });
