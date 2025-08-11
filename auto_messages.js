@@ -420,6 +420,7 @@ Just a quick reminder — lunches are mandatory and must be exactly 30 minutes. 
 ➡️ No more, no less.
 ❌ You cannot combine lunch with your breaks.
 🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.
+⏳ All Lunches should be done by 3pm, no one should be starting lunch at 3pm.
 
 Don’t forget to hit that Break button in the Flex app before you dig in! ✅
 Enjoy your lunch and recharge! 💪🥗🍔`;
