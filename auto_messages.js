@@ -226,7 +226,7 @@ class RocketChatAutomation {
     try {
       const res = await axios.get(
         `${this.serverUrl}/api/rooms/my-rooms`,
-        { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+        { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
       // Search through the rooms to find one with matching name
       const room = res.data.rooms?.find(r => r.name === roomName);
@@ -242,7 +242,7 @@ class RocketChatAutomation {
       await axios.post(
         `${this.serverUrl}/api/messages`,
         { roomId, message: text },
-        { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+        { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
     } catch (err) {
       console.error('❌ sendMessage failed:', err.message);
@@ -478,8 +478,7 @@ You have 3 hours and 0 minutes left in your delivery day. Let’s finish strong!
         form,
         {
           headers: {
-            'X-Auth-Token': this.authToken,
-            'X-User-Id': this.userId,
+            'Authorization': `Bearer ${this.authToken}`,
             ...form.getHeaders()
           },
           maxContentLength: Infinity,
@@ -544,7 +543,7 @@ You are expected to be at your first delivery by a certain time. You are putting
       const res = await axios.post(
         `${this.serverUrl}/api/direct-messages/start`,
         { username: this.dannyUsername },
-        { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+        { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
       const roomId = res.data.roomId || res.data.room?.id || res.data.id;
       const text = `🤖 Automation launched at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`;
