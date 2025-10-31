@@ -250,8 +250,20 @@ class RocketChatAutomation {
         `${this.serverUrl}/api/rooms/my-rooms`,
         { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
+      
+      console.log(`🔍 Searching for room: "${roomName}"`);
+      console.log(`📋 Available rooms (${res.data.rooms?.length || 0}):`, 
+        res.data.rooms?.map(r => r.name).join(', ') || 'none');
+      
       // Search through the rooms to find one with matching name
       const room = res.data.rooms?.find(r => r.name === roomName);
+      
+      if (room) {
+        console.log(`✅ Found room "${roomName}" with ID: ${room.id}`);
+      } else {
+        console.log(`❌ Room "${roomName}" not found in available rooms`);
+      }
+      
       return room ? room.id : null;
     } catch (err) {
       console.error('❌ checkRoomExists failed:', err.message);
@@ -283,11 +295,26 @@ class RocketChatAutomation {
   }
   // Safety message rotation that never stalls mid-day
   async sendSafetyMessage() {
-    if (!this.isBusinessHours()) return;
-    if (!this.authToken && !(await this.authenticate())) return;
+    if (!this.isBusinessHours()) {
+      console.log('⏰ Not business hours, skipping safety message');
+      return;
+    }
+    if (!this.authToken && !(await this.authenticate())) {
+      console.log('❌ Authentication failed, skipping safety message');
+      return;
+    }
     const room = this.getCurrentRoomName();
+    console.log(`🔍 Looking for room: ${room}`);
     const roomId = await this.checkRoomExists(room);
-    if (!roomId || !this.isRoomForToday(room)) return;
+    if (!roomId) {
+      console.log(`❌ Room not found: ${room}`);
+      return;
+    }
+    if (!this.isRoomForToday(room)) {
+      console.log(`⚠️ Room is not for today: ${room}`);
+      return;
+    }
+    console.log(`✅ Found room ID: ${roomId}`);
 
     // Ensure we always have an order to pull from
     if (!Array.isArray(this.dailyOrder) || this.dailyOrder.length === 0) {
@@ -325,6 +352,7 @@ class RocketChatAutomation {
     this.state.index = this.messageIndex;
     this.saveState();
     await this.sendMessage(roomId, msg);
+    console.log('✅ Safety message sent successfully');
   }
 
   async sendHydrationMessage() {
