@@ -225,11 +225,14 @@ class RocketChatAutomation {
   async checkRoomExists(roomName) {
     try {
       const res = await axios.get(
-        `${this.serverUrl}/api/v1/rooms.info?roomName=${encodeURIComponent(roomName)}`,
+        `${this.serverUrl}/api/rooms/my-rooms`,
         { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
       );
-      return res.data.room._id;
-    } catch {
+      // Search through the rooms to find one with matching name
+      const room = res.data.rooms?.find(r => r.name === roomName);
+      return room ? room.id : null;
+    } catch (err) {
+      console.error('❌ checkRoomExists failed:', err.message);
       return null;
     }
   }
@@ -237,12 +240,13 @@ class RocketChatAutomation {
   async sendMessage(roomId, text) {
     try {
       await axios.post(
-        `${this.serverUrl}/api/v1/chat.postMessage`,
-        { roomId, text },
+        `${this.serverUrl}/api/messages`,
+        { roomId, message: text },
         { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
       );
     } catch (err) {
       console.error('❌ sendMessage failed:', err.message);
+      console.error('Response:', err.response?.data);
     }
   }
 
@@ -345,10 +349,11 @@ You’ve got this Titans! 💪🔥`;
 
   async sendFridayTimecardReminder() {
     if (!this.authToken && !(await this.authenticate())) return;
-    const res = await axios.get(`${this.serverUrl}/api/v1/rooms.info?roomName=general`, {
-      headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId }
-    });
-    const roomId = res.data.room._id;
+    const roomId = await this.checkRoomExists('general');
+    if (!roomId) {
+      console.error('❌ Could not find general room');
+      return;
+    }
     const msg = `@all *Attention Titans*
 Here's your reminder for you to check and ensure your timecard is accurate. If it's not accurate or you missed a timecard punch please send an email to time@infi-dau7.com and follow this format when sending the email:
 
@@ -364,10 +369,11 @@ Clock out:
 
   async sendSaturdayTimecardReminder() {
     if (!this.authToken && !(await this.authenticate())) return;
-    const res = await axios.get(`${this.serverUrl}/api/v1/rooms.info?roomName=general`, {
-      headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId }
-    });
-    const roomId = res.data.room._id;
+    const roomId = await this.checkRoomExists('general');
+    if (!roomId) {
+      console.error('❌ Could not find general room');
+      return;
+    }
     const msg = `@all *Final Reminder*
 Did you remember to check your timecard? If you haven't now's the time to do so. All timecard corrections should be sent in no later than midnight tonight. If you need corrections please send an email to time@infi-dau7.com in this format:
 
@@ -534,14 +540,19 @@ You are expected to be at your first delivery by a certain time. You are putting
 
   async sendImmediateMessageToDanny() {
     if (!this.authToken && !(await this.authenticate())) return;
-    const res = await axios.post(
-      `${this.serverUrl}/api/v1/im.create`,
-      { username: this.dannyUsername },
-      { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
-    );
-    const roomId = res.data.room._id;
-    const text = `🤖 Automation launched at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`;
-    await this.sendMessage(roomId, text);
+    try {
+      const res = await axios.post(
+        `${this.serverUrl}/api/direct-messages/start`,
+        { username: this.dannyUsername },
+        { headers: { 'X-Auth-Token': this.authToken, 'X-User-Id': this.userId } }
+      );
+      const roomId = res.data.roomId || res.data.room?.id || res.data.id;
+      const text = `🤖 Automation launched at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`;
+      await this.sendMessage(roomId, text);
+    } catch (err) {
+      console.error('❌ sendImmediateMessageToDanny failed:', err.message);
+      console.error('Response:', err.response?.data);
+    }
   }
 
   // New: Proper Van Issue Reporting message at 9:40 daily
