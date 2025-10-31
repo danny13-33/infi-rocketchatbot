@@ -208,22 +208,30 @@ class RocketChatAutomation {
 
   async getUserIdByUsername(username) {
     try {
+      console.log(`🔍 Looking up user ID for username: "${username}"`);
       const res = await axios.get(
         `${this.serverUrl}/api/users/search?q=${encodeURIComponent(username)}`,
         { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
       
+      console.log(`📋 User search returned ${res.data?.length || 0} results`);
+      if (res.data?.length > 0) {
+        console.log('👥 Found users:', res.data.map(u => u.username).join(', '));
+      }
+      
       // Find exact username match (case-insensitive)
       const user = res.data.find(u => u.username.toLowerCase() === username.toLowerCase());
       
       if (!user) {
-        console.error(`❌ User '${username}' not found`);
+        console.error(`❌ User '${username}' not found in search results`);
         return null;
       }
       
+      console.log(`✅ Found user '${username}' with ID: ${user.id}`);
       return user.id;
     } catch (err) {
       console.error(`❌ getUserIdByUsername failed for '${username}':`, err.message);
+      console.error('Response:', err.response?.data);
       return null;
     }
   }
@@ -246,27 +254,50 @@ class RocketChatAutomation {
 
   async checkRoomExists(roomName) {
     try {
+      console.log('🔗 Calling API:', `${this.serverUrl}/api/rooms/my-rooms`);
+      console.log('🔑 Using token:', this.authToken ? 'Present' : 'Missing');
+      
       const res = await axios.get(
         `${this.serverUrl}/api/rooms/my-rooms`,
         { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
       
+      console.log('📡 Status Code:', res.status);
+      console.log('📡 Full API Response:', JSON.stringify(res.data, null, 2));
+      console.log('📡 Response type:', typeof res.data);
+      console.log('📡 Response keys:', Object.keys(res.data || {}));
+      
       console.log(`🔍 Searching for room: "${roomName}"`);
-      console.log(`📋 Available rooms (${res.data.rooms?.length || 0}):`, 
-        res.data.rooms?.map(r => r.name).join(', ') || 'none');
       
-      // Search through the rooms to find one with matching name
-      const room = res.data.rooms?.find(r => r.name === roomName);
-      
-      if (room) {
-        console.log(`✅ Found room "${roomName}" with ID: ${room.id}`);
-      } else {
-        console.log(`❌ Room "${roomName}" not found in available rooms`);
+      // Try different possible response structures
+      let rooms = res.data.rooms || res.data || [];
+      if (Array.isArray(res.data)) {
+        rooms = res.data;
       }
       
-      return room ? room.id : null;
+      console.log(`📋 Found ${rooms.length} rooms`);
+      if (rooms.length > 0) {
+        console.log('📋 Room names:', rooms.map(r => r.name || r.roomName || r.displayName).join(', '));
+      }
+      
+      // Search through the rooms to find one with matching name
+      const room = rooms.find(r => 
+        r.name === roomName || 
+        r.roomName === roomName || 
+        r.displayName === roomName
+      );
+      
+      if (room) {
+        console.log(`✅ Found room "${roomName}" with ID:`, room.id || room.roomId || room._id);
+        return room.id || room.roomId || room._id;
+      } else {
+        console.log(`❌ Room "${roomName}" not found in available rooms`);
+        return null;
+      }
     } catch (err) {
       console.error('❌ checkRoomExists failed:', err.message);
+      console.error('❌ Error response:', err.response?.data);
+      console.error('❌ Error status:', err.response?.status);
       return null;
     }
   }
@@ -633,7 +664,10 @@ Disciplinary action will be taken for failing to adhere to this procedure.`;
 
   startAutomation() {
     console.log(`🚀 Starting Automation at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`);
-    this.sendImmediateMessageToDanny();
+    // Try to send startup DM, but don't let it stop the bot if it fails
+    this.sendImmediateMessageToDanny().catch(err => {
+      console.error('⚠️ Startup DM failed, but continuing automation:', err.message);
+    });
 
     cron.schedule('0,30 10-19 * * *', () => this.sendSafetyMessage(), { timezone: 'America/Chicago' });
     cron.schedule('0 10-18 * 5-9 *', () => this.sendHydrationMessage(), { timezone: 'America/Chicago' });
