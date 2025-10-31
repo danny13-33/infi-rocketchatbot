@@ -184,7 +184,7 @@ class RocketChatAutomation {
   async authenticate() {
     try {
       const res = await axios.post(`${this.serverUrl}/api/auth/login`, {
-        user: this.username,
+        username: this.username,
         password: this.password
       });
       this.authToken = res.data.data.authToken;
