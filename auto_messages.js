@@ -206,6 +206,28 @@ class RocketChatAutomation {
     }
   }
 
+  async getUserIdByUsername(username) {
+    try {
+      const res = await axios.get(
+        `${this.serverUrl}/api/users/search?q=${encodeURIComponent(username)}`,
+        { headers: { 'Authorization': `Bearer ${this.authToken}` } }
+      );
+      
+      // Find exact username match (case-insensitive)
+      const user = res.data.find(u => u.username.toLowerCase() === username.toLowerCase());
+      
+      if (!user) {
+        console.error(`❌ User '${username}' not found`);
+        return null;
+      }
+      
+      return user.id;
+    } catch (err) {
+      console.error(`❌ getUserIdByUsername failed for '${username}':`, err.message);
+      return null;
+    }
+  }
+
   getCurrentRoomName() {
     const now = DateTime.now().setZone('America/Chicago');
     const suffix = this.getOrdinalSuffix(now.day);
@@ -540,14 +562,22 @@ You are expected to be at your first delivery by a certain time. You are putting
   async sendImmediateMessageToDanny() {
     if (!this.authToken && !(await this.authenticate())) return;
     try {
+      // Look up Danny's user ID by username
+      const recipientId = await this.getUserIdByUsername(this.dannyUsername);
+      if (!recipientId) {
+        console.error('❌ Could not find user ID for:', this.dannyUsername);
+        return;
+      }
+      
       const res = await axios.post(
         `${this.serverUrl}/api/direct-messages/start`,
-        { username: this.dannyUsername },
+        { recipientId: recipientId },
         { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
-      const roomId = res.data.roomId || res.data.room?.id || res.data.id;
+      const roomId = res.data.room.id;
       const text = `🤖 Automation launched at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`;
       await this.sendMessage(roomId, text);
+      console.log('✅ Startup message sent to', this.dannyUsername);
     } catch (err) {
       console.error('❌ sendImmediateMessageToDanny failed:', err.message);
       console.error('Response:', err.response?.data);
