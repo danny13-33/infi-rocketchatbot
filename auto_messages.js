@@ -188,26 +188,12 @@ class RocketChatAutomation {
         password: this.password
       });
       
-      console.log('✅ Authentication response received');
-      console.log('Response structure:', JSON.stringify(res.data, null, 2));
-      
-      // Try different response structures
-      if (res.data.data?.authToken) {
-        // Rocket.Chat style: { data: { authToken, userId } }
-        this.authToken = res.data.data.authToken;
-        this.userId = res.data.data.userId;
-      } else if (res.data.authToken) {
-        // Direct style: { authToken, userId }
-        this.authToken = res.data.authToken;
-        this.userId = res.data.userId;
-      } else if (res.data.token) {
-        // Alternative: { token, userId } or { token, user: { _id } }
-        this.authToken = res.data.token;
-        this.userId = res.data.userId || res.data.user?._id;
-      }
+      // New API format: { token, user: { id } }
+      this.authToken = res.data.token;
+      this.userId = res.data.user.id;
       
       if (!this.authToken || !this.userId) {
-        console.error('❌ Could not find authToken or userId in response');
+        console.error('❌ Could not find token or user.id in response');
         return false;
       }
       
