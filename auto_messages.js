@@ -183,7 +183,7 @@ class RocketChatAutomation {
 
   async authenticate() {
     try {
-      const res = await axios.post(`${this.serverUrl}/api/v1/login`, {
+      const res = await axios.post(`${this.serverUrl}/api/auth/login`, {
         user: this.username,
         password: this.password
       });
@@ -192,6 +192,7 @@ class RocketChatAutomation {
       return true;
     } catch (err) {
       console.error('❌ Authentication failed:', err.message);
+      console.error('Response:', err.response?.data);
       return false;
     }
   }
