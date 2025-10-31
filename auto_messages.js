@@ -263,7 +263,7 @@ class RocketChatAutomation {
     try {
       await axios.post(
         `${this.serverUrl}/api/messages`,
-        { roomId, message: text },
+        { roomId, content: text },
         { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
     } catch (err) {
