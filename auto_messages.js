@@ -242,6 +242,25 @@ class RocketChatAutomation {
     return `${now.monthLong}-${now.day}${suffix}-${now.year}`;
   }
 
+  getCurrentCycle0RoomName() {
+    const now = DateTime.now().setZone('America/Chicago');
+    const suffix = this.getOrdinalSuffix(now.day);
+    return `Cycle0-${now.monthLong}-${now.day}${suffix}-${now.year}`;
+  }
+
+  isCycle0Active() {
+    const now = DateTime.now().setZone('America/Chicago');
+    // TESTING: Temporarily set to Nov 10-11, 2025 for testing
+    // Production dates: Nov 17, 2025 - Jan 7, 2026
+    const startDate = DateTime.fromISO('2025-11-10', { zone: 'America/Chicago' });
+    const endDate = DateTime.fromISO('2025-11-11', { zone: 'America/Chicago' });
+    return now >= startDate && now <= endDate;
+  }
+
+  isRoomForTodayCycle0(name) {
+    return name === this.getCurrentCycle0RoomName();
+  }
+
   getOrdinalSuffix(d) {
     if (d >= 11 && d <= 13) return 'th';
     switch (d % 10) {
@@ -386,6 +405,74 @@ class RocketChatAutomation {
     console.log('✅ Safety message sent successfully');
   }
 
+  isCycle0BusinessHours() {
+    const now = DateTime.now().setZone('America/Chicago');
+    const mins = now.hour * 60 + now.minute;
+    return mins >= 455 && mins <= 1115; // 7:35 - 18:35
+  }
+
+  async sendCycle0SafetyMessage() {
+    if (!this.isCycle0Active()) return;
+    if (!this.isCycle0BusinessHours()) {
+      console.log('⏰ Not Cycle0 business hours, skipping safety message');
+      return;
+    }
+    if (!this.authToken && !(await this.authenticate())) {
+      console.log('❌ Authentication failed, skipping Cycle0 safety message');
+      return;
+    }
+    const room = this.getCurrentCycle0RoomName();
+    console.log(`🔍 Looking for Cycle0 room: ${room}`);
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId) {
+      console.log(`❌ Cycle0 Room not found: ${room}`);
+      return;
+    }
+    if (!this.isRoomForTodayCycle0(room)) {
+      console.log(`⚠️ Cycle0 Room is not for today: ${room}`);
+      return;
+    }
+    console.log(`✅ Found Cycle0 room ID: ${roomId}`);
+
+    // Ensure we always have an order to pull from
+    if (!Array.isArray(this.dailyOrder) || this.dailyOrder.length === 0) {
+      const count = this.safetyMessages.length;
+      const indices = Array.from({ length: count }, (_, i) => i);
+      for (let i = count - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+      this.dailyOrder = indices;
+      this.state.order = indices;
+      this.messageIndex = 0;
+      this.state.index = 0;
+      this.saveState();
+    }
+
+    // If we have sent all messages today, reshuffle and continue
+    if (this.messageIndex >= this.dailyOrder.length) {
+      const count = this.safetyMessages.length;
+      const indices = Array.from({ length: count }, (_, i) => i);
+      for (let i = count - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+      this.dailyOrder = indices;
+      this.state.order = indices;
+      this.messageIndex = 0;
+      this.state.index = 0;
+      this.saveState();
+    }
+
+    const idx = this.dailyOrder[this.messageIndex];
+    const msg = this.safetyMessages[idx];
+    this.messageIndex++;
+    this.state.index = this.messageIndex;
+    this.saveState();
+    await this.sendMessage(roomId, msg);
+    console.log('✅ Cycle0 Safety message sent successfully');
+  }
+
   async sendHydrationMessage() {
     const now = DateTime.now().setZone('America/Chicago');
     if (now.month < 5 || now.month > 9) return;
@@ -423,6 +510,17 @@ You’ve got this Titans! 💪🔥`;
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
+    const text = `*Attention Titans*
+@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in send an email to time@infi-dau7.com immediately. Thank you!`;
+    await this.sendMessage(roomId, text);
+  }
+
+  async sendCycle0ClockInReminderMessage() {
+    if (!this.isCycle0Active()) return;
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentCycle0RoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForTodayCycle0(room)) return;
     const text = `*Attention Titans*
 @all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in send an email to time@infi-dau7.com immediately. Thank you!`;
     await this.sendMessage(roomId, text);
@@ -486,6 +584,25 @@ When you turn in your bag at the end of the night, check it thoroughly. Ensure t
     await this.sendMessage(roomId, msg);
   }
 
+  async sendCycle0RtsReminderMessage() {
+    if (!this.isCycle0Active()) return;
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentCycle0RoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForTodayCycle0(room)) return;
+    const msg = `:pushpin: RTS Reminders  :pushpin: @all
+
+*Before you RTS*  :arrow_down:
+🔎 Check your van for any missorts or missing packages 📦 before you RTS. Missing packages must be reattempted, and missorts must be delivered if they are within a 15-minute radius.
+
+*Parking at Station*  :blue_car:
+Clean out your van! Take your trash🗑, wipe it down  :sponge:, and sweep it out. 🧹 You may not be in the same van tomorrow. Do not leave your mess for someone else.  :do_not_litter:
+
+*Equipment turn in*  :bulb:
+When you turn in your bag at the end of the night, check it thoroughly. Ensure the work device 📱, gas card 💳, keys 🔑, and portable charger 🔋 are inside. Remember to wait the full 2 minutes for your post trip on standard vehicles and 3 minutes on step vans, and be certain you've clocked out before leaving.  :clock8:`;
+    await this.sendMessage(roomId, msg);
+  }
+
   async sendLunchReminderMessage() {
     if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
@@ -498,7 +615,25 @@ Just a quick reminder — lunches are mandatory and must be exactly 30 minutes. 
 ❌ You cannot combine lunch with your breaks.
 🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.
 
-Don’t forget to hit that Break button in the Flex app before you dig in! ✅
+Don't forget to hit that Break button in the Flex app before you dig in! ✅
+Enjoy your lunch and recharge! 💪🥗🍔`;
+    await this.sendMessage(roomId, msg);
+  }
+
+  async sendCycle0LunchReminderMessage() {
+    if (!this.isCycle0Active()) return;
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentCycle0RoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForTodayCycle0(room)) return;
+    const msg = `@all 🍽️ Titans! It's Lunch Time! 🕒
+
+Just a quick reminder — lunches are mandatory and must be exactly 30 minutes. ⏳
+➡️ No more, no less.
+❌ You cannot combine lunch with your breaks.
+🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.
+
+Don't forget to hit that Break button in the Flex app before you dig in! ✅
 Enjoy your lunch and recharge! 💪🥗🍔`;
     await this.sendMessage(roomId, msg);
   }
@@ -537,7 +672,53 @@ You have 3 hours and 0 minutes left in your delivery day. Let’s finish strong!
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans!* Last hour remaining! 💥 Let’s push through and complete the delivery day safely! 💪`;
+    const msg = `@all *Attention Titans!* Last hour remaining! 💥 Let's push through and complete the delivery day safely! 💪`;
+    await this.sendMessage(roomId, msg);
+  }
+
+  async sendCycle0DeliveryCountdownReminder0905() {
+    if (!this.isCycle0Active()) return;
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentCycle0RoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForTodayCycle0(room)) return;
+    const msg = `@all *Attention Titans*
+
+You have 7 hours and 0 minutes left in your delivery day. Ensure you are keeping a great pace and complete all deliveries before 4:05pm to avoid breaking our promise. You got this! 💪`;
+    await this.sendMessage(roomId, msg);
+  }
+
+  async sendCycle0DeliveryCountdownReminder1105() {
+    if (!this.isCycle0Active()) return;
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentCycle0RoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForTodayCycle0(room)) return;
+    const msg = `@all *Attention Titans*
+
+You have 5 hours and 0 minutes left in your delivery day. Keep up the pace! 💪`;
+    await this.sendMessage(roomId, msg);
+  }
+
+  async sendCycle0DeliveryCountdownReminder1305() {
+    if (!this.isCycle0Active()) return;
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentCycle0RoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForTodayCycle0(room)) return;
+    const msg = `@all *Attention Titans*
+
+You have 3 hours and 0 minutes left in your delivery day. Let's finish strong! 💪`;
+    await this.sendMessage(roomId, msg);
+  }
+
+  async sendCycle0DeliveryCountdownReminder1505() {
+    if (!this.isCycle0Active()) return;
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentCycle0RoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForTodayCycle0(room)) return;
+    const msg = `@all *Attention Titans!* Last hour remaining! 💥 Let's push through and complete the delivery day safely! 💪`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -606,11 +787,40 @@ You are responsible for your own routes. 💪`;
     await this.sendMessage(roomId, msg);
   }
 
+  async sendCycle0PacingReminderMessage() {
+    if (!this.isCycle0Active()) return;
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentCycle0RoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForTodayCycle0(room)) return;
+    const msg = `⬇ Pacing and time management ⬇
+
+Pacing is essential. Ideally, no stop should take more than 2 minutes to complete. ⌚
+
+Encountering a problem with a stop that can't be solved quickly? ⌛ It may be better to skip that stop and move on. Don't endanger your whole route for the sake of one stop.
+
+You are responsible for your own routes. 💪`;
+    await this.sendMessage(roomId, msg);
+  }
+
   async sendEarlyBreakReminderMessage() {
     if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
+    const msg = `If you're stopping before your first delivery then you are using your first break!
+This means stopping for the restroom, food, or drinks. Come prepared.
+You are expected to be at your first delivery by a certain time. You are putting yourself behind if you stop before then.
+⏰  ❗`;
+    await this.sendMessage(roomId, msg);
+  }
+
+  async sendCycle0EarlyBreakReminderMessage() {
+    if (!this.isCycle0Active()) return;
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentCycle0RoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForTodayCycle0(room)) return;
     const msg = `If you're stopping before your first delivery then you are using your first break!
 This means stopping for the restroom, food, or drinks. Come prepared.
 You are expected to be at your first delivery by a certain time. You are putting yourself behind if you stop before then.
@@ -662,6 +872,25 @@ Disciplinary action will be taken for failing to adhere to this procedure.`;
     await this.sendMessage(roomId, msg);
   }
 
+  async sendCycle0VanIssueReportingMessage() {
+    if (!this.isCycle0Active()) return;
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentCycle0RoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForTodayCycle0(room)) return;
+
+    const msg = `Proper Van Issue Reporting
+❗ 🚚 📋
+- Post a brief description of the issue in the #on_road_van_issues room. Tag Jessie and Dylan (put the "@" symbol in front of the name) on to the message (Don't try to tag a manager on the upload of a picture).
+- Your message will be acknowledged with a " 👍 " and you will receive a direct message from Jessie or Dylan.
+- Jessie or Dylan will provide further instructions if needed directly to you.
+
+NOTE: If an issue is reported while your van is still at the station, DO NOT LEAVE THE STATION until the issue is addressed by a manager.
+Disciplinary action will be taken for failing to adhere to this procedure.`;
+
+    await this.sendMessage(roomId, msg);
+  }
+
   startAutomation() {
     console.log(`🚀 Starting Automation at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`);
     // Try to send startup DM, but don't let it stop the bot if it fails
@@ -669,6 +898,7 @@ Disciplinary action will be taken for failing to adhere to this procedure.`;
       console.error('⚠️ Startup DM failed, but continuing automation:', err.message);
     });
 
+    // REGULAR DAILY ROOM SCHEDULES (unchanged)
     cron.schedule('0,30 10-19 * * *', () => this.sendSafetyMessage(), { timezone: 'America/Chicago' });
     cron.schedule('0 10-18 * 5-9 *', () => this.sendHydrationMessage(), { timezone: 'America/Chicago' });
     cron.schedule('0 9 * 5-9 *', () => this.sendHeatReminderMessage(), { timezone: 'America/Chicago' });
@@ -694,6 +924,27 @@ Disciplinary action will be taken for failing to adhere to this procedure.`;
     cron.schedule('15 10 * * *', () => this.sendRandomImageReminder(), { timezone: 'America/Chicago' });
     cron.schedule('15 12 * * *', () => this.sendRandomImageReminder(), { timezone: 'America/Chicago' });
     cron.schedule('15 15 * * *', () => this.sendRandomImageReminder(), { timezone: 'America/Chicago' });
+
+    // CYCLE0 ROOM SCHEDULES (Nov 17, 2025 - Jan 7, 2026)
+    // Safety messages: 7:35am - 4:35pm every 30 minutes
+    cron.schedule('35,5 7-16 * * *', () => this.sendCycle0SafetyMessage(), { timezone: 'America/Chicago' });
+    // Pacing reminder: 6:50am
+    cron.schedule('50 6 * * *', () => this.sendCycle0PacingReminderMessage(), { timezone: 'America/Chicago' });
+    // Clock-in reminder: 7:05am
+    cron.schedule('5 7 * * *', () => this.sendCycle0ClockInReminderMessage(), { timezone: 'America/Chicago' });
+    // Early break & van issue: 7:20am
+    cron.schedule('20 7 * * *', () => this.sendCycle0EarlyBreakReminderMessage(), { timezone: 'America/Chicago' });
+    cron.schedule('20 7 * * *', () => this.sendCycle0VanIssueReportingMessage(), { timezone: 'America/Chicago' });
+    // Delivery countdowns: 9:05am, 11:05am, 1:05pm, 3:05pm
+    cron.schedule('5 9 * * *', () => this.sendCycle0DeliveryCountdownReminder0905(), { timezone: 'America/Chicago' });
+    cron.schedule('5 11 * * *', () => this.sendCycle0DeliveryCountdownReminder1105(), { timezone: 'America/Chicago' });
+    cron.schedule('5 13 * * *', () => this.sendCycle0DeliveryCountdownReminder1305(), { timezone: 'America/Chicago' });
+    cron.schedule('5 15 * * *', () => this.sendCycle0DeliveryCountdownReminder1505(), { timezone: 'America/Chicago' });
+    // Lunch reminders: 11:35am and 12:05pm
+    cron.schedule('35 11 * * *', () => this.sendCycle0LunchReminderMessage(), { timezone: 'America/Chicago' });
+    cron.schedule('5 12 * * *', () => this.sendCycle0LunchReminderMessage(), { timezone: 'America/Chicago' });
+    // RTS reminder: 3:35pm
+    cron.schedule('35 15 * * *', () => this.sendCycle0RtsReminderMessage(), { timezone: 'America/Chicago' });
   }
 
   stopAutomation() {
