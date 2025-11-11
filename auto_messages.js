@@ -252,8 +252,8 @@ class RocketChatAutomation {
     const now = DateTime.now().setZone('America/Chicago');
     // TESTING: Temporarily set to Nov 10-11, 2025 for testing
     // Production dates: Nov 17, 2025 - Jan 7, 2026
-    const startDate = DateTime.fromISO('2025-11-10', { zone: 'America/Chicago' });
-    const endDate = DateTime.fromISO('2025-11-11', { zone: 'America/Chicago' });
+    const startDate = DateTime.fromISO('2025-11-10', { zone: 'America/Chicago' }).startOf('day');
+    const endDate = DateTime.fromISO('2025-11-11', { zone: 'America/Chicago' }).endOf('day');
     return now >= startDate && now <= endDate;
   }
 
