@@ -833,7 +833,7 @@ You are expected to be at your first delivery by a certain time. You are putting
     }
   }
 
-  // New: Proper Van Issue Reporting message at 9:40 daily
+  // Proper Van Issue Reporting message at 9:40 daily
   async sendVanIssueReportingMessage() {
     if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
