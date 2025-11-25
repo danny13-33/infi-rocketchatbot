@@ -840,13 +840,14 @@ You are expected to be at your first delivery by a certain time. You are putting
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
 
-    const msg = `Proper Van Issue Reporting
+    const msg = `**Proper Van Issue Reporting**
 ❗ 🚚 📋
-- Post a brief description of the issue in the #on_road_van_issues room. Tag Jessie and Dylan (put the "@" symbol in front of the name) on to the message (Don't try to tag a manager on the upload of a picture).
-- Your message will be acknowledged with a " 👍 " and you will receive a direct message from Jessie or Dylan.
-- Jessie or Dylan will provide further instructions if needed directly to you.
 
-NOTE: If an issue is reported while your van is still at the station, DO NOT LEAVE THE STATION until the issue is addressed by a manager.
+• Post a brief description of the issue in the #on_road_van_issues room. Tag Jessie and Dylan (put the "@" symbol in front of the name) on to the message (Don't try to tag a manager on the upload of a picture).
+• Your message will be acknowledged with a " 👍 " and you will receive a direct message from Jessie or Dylan.
+• Jessie or Dylan will provide further instructions if needed directly to you.
+
+**NOTE:** If an issue is reported while your van is still at the station, DO NOT LEAVE THE STATION until the issue is addressed by a manager.
 Disciplinary action will be taken for failing to adhere to this procedure.`;
 
     await this.sendMessage(roomId, msg);
@@ -859,13 +860,14 @@ Disciplinary action will be taken for failing to adhere to this procedure.`;
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForTodayCycle0(room)) return;
 
-    const msg = `Proper Van Issue Reporting
+    const msg = `**Proper Van Issue Reporting**
 ❗ 🚚 📋
-- Post a brief description of the issue in the #on_road_van_issues room. Tag Jessie and Dylan (put the "@" symbol in front of the name) on to the message (Don't try to tag a manager on the upload of a picture).
-- Your message will be acknowledged with a " 👍 " and you will receive a direct message from Jessie or Dylan.
-- Jessie or Dylan will provide further instructions if needed directly to you.
 
-NOTE: If an issue is reported while your van is still at the station, DO NOT LEAVE THE STATION until the issue is addressed by a manager.
+• Post a brief description of the issue in the #on_road_van_issues room. Tag Jessie and Dylan (put the "@" symbol in front of the name) on to the message (Don't try to tag a manager on the upload of a picture).
+• Your message will be acknowledged with a " 👍 " and you will receive a direct message from Jessie or Dylan.
+• Jessie or Dylan will provide further instructions if needed directly to you.
+
+**NOTE:** If an issue is reported while your van is still at the station, DO NOT LEAVE THE STATION until the issue is addressed by a manager.
 Disciplinary action will be taken for failing to adhere to this procedure.`;
 
     await this.sendMessage(roomId, msg);
