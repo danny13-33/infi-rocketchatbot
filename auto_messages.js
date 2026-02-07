@@ -187,32 +187,36 @@ Let's stay safe and smart out there!`
     }
   }
 
-  async getUserIdByUsername(username) {
+  async getUserIdByUsername(username, retried = false) {
     try {
       console.log(`🔍 Looking up user ID for username: "${username}"`);
       const res = await axios.get(
         `${this.serverUrl}/api/users/search?q=${encodeURIComponent(username)}`,
         { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
-      
+
       console.log(`📋 User search returned ${res.data?.length || 0} results`);
-      if (res.data?.length > 0) {
-        console.log('👥 Found users:', res.data.map(u => u.username).join(', '));
-      }
-      
+
       // Find exact username match (case-insensitive)
       const user = res.data.find(u => u.username.toLowerCase() === username.toLowerCase());
-      
+
       if (!user) {
         console.error(`❌ User '${username}' not found in search results`);
         return null;
       }
-      
+
       console.log(`✅ Found user '${username}' with ID: ${user.id}`);
       return user.id;
     } catch (err) {
+      if (!retried && err.response?.status === 403) {
+        console.log('🔄 Token expired on getUserIdByUsername, re-authenticating...');
+        this.authToken = null;
+        this.userId = null;
+        if (await this.authenticate()) {
+          return this.getUserIdByUsername(username, true);
+        }
+      }
       console.error(`❌ getUserIdByUsername failed for '${username}':`, err.message);
-      console.error('Response:', err.response?.data);
       return null;
     }
   }
@@ -251,41 +255,33 @@ Let's stay safe and smart out there!`
     }
   }
 
-  async checkRoomExists(roomName) {
+  async checkRoomExists(roomName, retried = false) {
     try {
       console.log('🔗 Calling API:', `${this.serverUrl}/api/rooms/my-rooms`);
       console.log('🔑 Using token:', this.authToken ? 'Present' : 'Missing');
-      
+
       const res = await axios.get(
         `${this.serverUrl}/api/rooms/my-rooms`,
         { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
-      
-      console.log('📡 Status Code:', res.status);
-      console.log('📡 Full API Response:', JSON.stringify(res.data, null, 2));
-      console.log('📡 Response type:', typeof res.data);
-      console.log('📡 Response keys:', Object.keys(res.data || {}));
-      
+
       console.log(`🔍 Searching for room: "${roomName}"`);
-      
+
       // Try different possible response structures
       let rooms = res.data.rooms || res.data || [];
       if (Array.isArray(res.data)) {
         rooms = res.data;
       }
-      
+
       console.log(`📋 Found ${rooms.length} rooms`);
-      if (rooms.length > 0) {
-        console.log('📋 Room names:', rooms.map(r => r.name || r.roomName || r.displayName).join(', '));
-      }
-      
+
       // Search through the rooms to find one with matching name
-      const room = rooms.find(r => 
-        r.name === roomName || 
-        r.roomName === roomName || 
+      const room = rooms.find(r =>
+        r.name === roomName ||
+        r.roomName === roomName ||
         r.displayName === roomName
       );
-      
+
       if (room) {
         console.log(`✅ Found room "${roomName}" with ID:`, room.id || room.roomId || room._id);
         return room.id || room.roomId || room._id;
@@ -294,14 +290,21 @@ Let's stay safe and smart out there!`
         return null;
       }
     } catch (err) {
+      // If token expired/invalid, re-authenticate and retry once
+      if (!retried && err.response?.status === 403) {
+        console.log('🔄 Token expired, re-authenticating...');
+        this.authToken = null;
+        this.userId = null;
+        if (await this.authenticate()) {
+          return this.checkRoomExists(roomName, true);
+        }
+      }
       console.error('❌ checkRoomExists failed:', err.message);
-      console.error('❌ Error response:', err.response?.data);
-      console.error('❌ Error status:', err.response?.status);
       return null;
     }
   }
 
-  async sendMessage(roomId, text) {
+  async sendMessage(roomId, text, retried = false) {
     try {
       await axios.post(
         `${this.serverUrl}/api/messages`,
@@ -309,8 +312,15 @@ Let's stay safe and smart out there!`
         { headers: { 'Authorization': `Bearer ${this.authToken}` } }
       );
     } catch (err) {
+      if (!retried && err.response?.status === 403) {
+        console.log('🔄 Token expired on sendMessage, re-authenticating...');
+        this.authToken = null;
+        this.userId = null;
+        if (await this.authenticate()) {
+          return this.sendMessage(roomId, text, true);
+        }
+      }
       console.error('❌ sendMessage failed:', err.message);
-      console.error('Response:', err.response?.data);
     }
   }
 
@@ -619,6 +629,7 @@ Enjoy your lunch and recharge! 💪🥗🍔`;
   }
 
   async sendDeliveryCountdownReminder1130() {
+    if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
@@ -629,6 +640,7 @@ You have 7 hours and 0 minutes left in your delivery day. Ensure you are keeping
   }
 
   async sendDeliveryCountdownReminder1330() {
+    if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
@@ -639,6 +651,7 @@ You have 5 hours and 0 minutes left in your delivery day. Keep up the pace! 💪
   }
 
   async sendDeliveryCountdownReminder1530() {
+    if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
@@ -649,6 +662,7 @@ You have 3 hours and 0 minutes left in your delivery day. Let’s finish strong!
   }
 
   async sendDeliveryCountdownReminder1730() {
+    if (!this.authToken && !(await this.authenticate())) return;
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
@@ -734,6 +748,7 @@ You have 3 hours and 0 minutes left in your delivery day. Let's finish strong! �
 
   async sendRandomImageReminder() {
     try {
+      if (!this.authToken && !(await this.authenticate())) return;
       const images = ['dogs.jpg', 'leadwithsafety.jpg', 'stopsigns.jpg'];
       const today = this.getToday();
       const used = this.state.usedImages[today] || [];
