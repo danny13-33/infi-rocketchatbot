@@ -889,6 +889,7 @@ Disciplinary action will be taken for failing to adhere to this procedure.`;
   }
 
   startAutomation() {
+    // Redeployed 2026-03-08 to fix DST cron scheduling issue
     console.log(`🚀 Starting Automation at ${DateTime.now().setZone('America/Chicago').toLocaleString()}`);
     // Try to send startup DM, but don't let it stop the bot if it fails
     this.sendImmediateMessageToDanny().catch(err => {
