@@ -501,7 +501,7 @@ You’ve got this Titans! 💪🔥`;
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
     const text = `*Attention Titans*
-@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in send an email to time@infi-dau7.com immediately. Thank you!`;
+@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in make sure you edit your timecard in the ADP app. If you have an issue to see an onsite manager to help you. Thank you!`;
     await this.sendMessage(roomId, text);
   }
 
@@ -512,7 +512,7 @@ You’ve got this Titans! 💪🔥`;
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForTodayCycle0(room)) return;
     const text = `*Attention Titans*
-@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in send an email to time@infi-dau7.com immediately. Thank you!`;
+@all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in make sure you edit your timecard in the ADP app. If you have an issue to see an onsite manager to help you. Thank you!`;
     await this.sendMessage(roomId, text);
   }
 
@@ -524,15 +524,7 @@ You’ve got this Titans! 💪🔥`;
       return;
     }
     const msg = `@all *Attention Titans*
-Here's your reminder for you to check and ensure your timecard is accurate. If it's not accurate or you missed a timecard punch please send an email to time@infi-dau7.com and follow this format when sending the email:
-
-Date:
-Clock in:
-Lunch out:
-Lunch in:
-Clock out:
-
-*DO NOT USE ADP TO CORRECT YOUR TIMECARD THAT FEATURE DOES NOT WORK*`;
+Here's your reminder for you to check and ensure your timecard is accurate. If it's not accurate or you missed a timecard punch you must edit your punch in the ADP app AND your lunch punch must match your timecard. Failure to properly edit your timecard and verify all punches are correct will affect your next paycheck and no fixes will be implemented until the next payroll is processed 2 weeks later. Take this Seriously!`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -544,15 +536,7 @@ Clock out:
       return;
     }
     const msg = `@all *Final Reminder*
-Did you remember to check your timecard? If you haven't now's the time to do so. All timecard corrections should be sent in no later than midnight tonight. If you need corrections please send an email to time@infi-dau7.com in this format:
-
-Date:
-Clock in:
-Lunch out:
-Lunch in:
-Clock out:
-
-*DO NOT USE ADP TO CORRECT YOUR TIMECARD THAT FEATURE DOES NOT WORK*`;
+Did you remember to check your timecard? If you haven't now's the time to do so. All timecard edits should be submitted no later than midnight tonight. Failure to properly edit your timecard and verify all punches are correct will affect your next paycheck and no fixes will be implemented until the next payroll is processed 2 weeks later. Take this Seriously!`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -570,7 +554,7 @@ Clock out:
 Clean out your van! Take your trash🗑, wipe it down  :sponge:, and sweep it out. 🧹 You may not be in the same van tomorrow. Do not leave your mess for someone else.  :do_not_litter:
 
 *Equipment turn in*  :bulb:
-When you turn in your bag at the end of the night, check it thoroughly. Ensure the work device 📱, gas card 💳, keys 🔑, and portable charger 🔋 are inside. Remember to wait the full 2 minutes for your post trip on standard vehicles and 3 minutes on step vans, and be certain you've clocked out before leaving.  :clock8:`;
+When you turn in your bag at the end of the night, check it thoroughly. Ensure the work device 📱, gas card 💳, keys 🔑, and portable charger 🔋 are inside. Remember to wait the full 2 minutes for your post trip on standard vehicles and 3 minutes on step vans, and be certain you show the manager on duty your ADP punches for the day to ensure you have them recorded.  :clock8:`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -589,7 +573,7 @@ When you turn in your bag at the end of the night, check it thoroughly. Ensure t
 Clean out your van! Take your trash🗑, wipe it down  :sponge:, and sweep it out. 🧹 You may not be in the same van tomorrow. Do not leave your mess for someone else.  :do_not_litter:
 
 *Equipment turn in*  :bulb:
-When you turn in your bag at the end of the night, check it thoroughly. Ensure the work device 📱, gas card 💳, keys 🔑, and portable charger 🔋 are inside. Remember to wait the full 2 minutes for your post trip on standard vehicles and 3 minutes on step vans, and be certain you've clocked out before leaving.  :clock8:`;
+When you turn in your bag at the end of the night, check it thoroughly. Ensure the work device 📱, gas card 💳, keys 🔑, and portable charger 🔋 are inside. Remember to wait the full 2 minutes for your post trip on standard vehicles and 3 minutes on step vans, and be certain you show the manager on duty your ADP punches for the day to ensure you have them recorded.  :clock8:`;
     await this.sendMessage(roomId, msg);
   }
 
@@ -605,7 +589,12 @@ Just a quick reminder — lunches are mandatory and must be exactly 30 minutes. 
 ❌ You cannot combine lunch with your breaks.
 🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.
 
-Don't forget to hit that Break button in the Flex app before you dig in! ✅
+🛑 You must stop delivering during your 30-minute lunch break — no exceptions.
+📲 Use *both* the Flex App and ADP to properly record your lunch period.
+🔄 Your timecard punches must match your break time in the app.
+
+⚠️ *Failure to properly record your lunch punches will result in Disciplinary Action.*
+
 Enjoy your lunch and recharge! 💪🥗🍔`;
     await this.sendMessage(roomId, msg);
   }
@@ -623,7 +612,12 @@ Just a quick reminder — lunches are mandatory and must be exactly 30 minutes. 
 ❌ You cannot combine lunch with your breaks.
 🚗 Travel time to and from your lunch spot counts as part of your 30-minute lunch.
 
-Don't forget to hit that Break button in the Flex app before you dig in! ✅
+🛑 You must stop delivering during your 30-minute lunch break — no exceptions.
+📲 Use *both* the Flex App and ADP to properly record your lunch period.
+🔄 Your timecard punches must match your break time in the app.
+
+⚠️ *Failure to properly record your lunch punches will result in Disciplinary Action.*
+
 Enjoy your lunch and recharge! 💪🥗🍔`;
     await this.sendMessage(roomId, msg);
   }
