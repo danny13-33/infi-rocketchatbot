@@ -24,76 +24,36 @@ class RocketChatAutomation {
 
     // All safety messages preserved verbatim
     this.safetyMessages = [
-      `👀 *Eyes up. Hands on the wheel.*
-Looking down or away too long = a Netradyne alert. Reaching for your phone or dash repeatedly = a distraction — and distracted driving is a top cause of on-road crashes.
-🅿️ The camera only counts you as "parked" in *Park* — not stopped at a red light on the brake.
-⚠️ Even Bluetooth actions (answering calls, skipping songs) count as phone manipulation.
-*Never hold your phone while driving. No exceptions.*`,
-      `🚨 *Amazon is not playing with safety.*
-A severe infraction can suspend your account *mid-route* — and there's nothing we can do but send you back to station and take disciplinary action, up to termination.
-See yellow? *Be ready to STOP.* Follow every safety measure, every time.`,
-      `🚚 *Keep your distance — at least 3 van lengths / 8 seconds.*
-More in rain, traffic, or high speed. Cut off? *Ease off the gas and create space.*
-Space = the time you need to spot a hazard and react safely. Leave room on every lane change and merge, too.`,
-      `🚫🐕 *No pet engagement — ever.*
-Any size, any breed: leave them alone. Animal loose and not restrained? *Use Contact Compliance.* Your safety comes first.`,
-      `🐾 *See a dog (or signs of one)?*
-Add the paw-print: Delivery App → *Help → "Report a dog on your route."* It protects you and the next driver.`,
-      `🐕 *Dog present? Don't risk it.*
-Mark *unable to deliver (dog)*, then follow Contact Compliance. *Never exit the van for a loose dog.* No package is worth a bite.`,
-      `🦵 *Look before you step. Every time.*
-Don't jump out of the van — your legs can't take that impact all day. *3 points of contact* and use every step.
-Rushing is when mistakes happen. Slow is smooth, smooth is fast.`,
-      `🌧️ *Wet day = high slip, trip, and fall risk.*
-3 points of contact getting out, and know your path before you walk it. You're fully capable of being safe out there — stay deliberate.`,
-      `🦺 *Belt on — across chest and waist, every time the van moves.*
-Never sit on a buckled belt. Faulty belt? Post in *#on_road_van_issues* and tell management. *No van rolls with a bad belt.*`,
-      `🚛💨 *Watch your speed.*
-Unsure of the limit? Drive what's typical for the road (25–30 mph in neighborhoods).
-*Go by the SIGNS, not the GPS* — the signs are what the camera sees, and speeding violations are easy to avoid.`,
-      `👀 *Keep an eye on your speed today.*
-In doubt, go slower than you think. *Signs over GPS, always.* Let's keep it safe and finish strong.`,
-      `💧 *Show up hydrated and bring your own water.*
-Pad water can run out — that's your backup, not your plan. Don't set yourself up to be a victim of dehydration.`,
-      `🚰 *Bring enough water — it's on you.*
-Amazon runs out sometimes. If there's water on the pad, *grab your share and leave some for others.*`,
-      `🛑 *Full stop. Behind the sign. 2 full seconds.*
-Can't see oncoming traffic? Stop at the sign, then *creep forward until you can.* Stop signs protect you and everyone around you.`,
-      `🛑 *Complete stop = van fully stopped.*
-Press the brake until you're no longer moving. *Any roll before you go triggers an alert.*`,
-      `🚦 *Yellow means STOP — don't try to beat the light.*
-Someone runs a red every ~20 minutes at busy intersections. Light turns yellow? Come to a safe stop before entering the intersection.`,
-      `🚪 *Never deliver with ANY door open* — driver, slider, or back.
-This is one of the most unsafe things you can do on route: someone can hop in or grab packages, and packages fall out without you noticing. *Close every door, every stop.*`,
-      `🚶 *Stay heads-up for pedestrians.*
-They can step into the road anywhere — crosswalk or not. Be extra alert near *school zones, holidays, and busy hours.*`,
-      `🥵 *Prep for the heat — it starts the night before.*
-💧 ~1 gallon of water/day • ☕ skip caffeine (it dehydrates) • 🍎 light snacks • 😴 sleep well • recover with food + rest, not just meds.
-Do this the day of AND the night before to prevent heat illness.`,
-      `👀 *Be critical at blind spots.*
-Merging? Check your mirrors and lean forward for a new angle. Reversing? Use the mirrors, the camera, *AND* Get Out And Look.`,
-      `📌 *Avoid reversing — if you must, stay under 5 MPH* (over triggers Netradyne, and slower is safer 🚸).
-Skip parking on driveways: if you can see the front door from the street, *don't pull in.* Stay safe and smart out there. 🏠`,
-      `📸 *Your POD is your proof — make every one count.*
-✅ Package *clearly visible*, at the door, fully in frame.
-❌ No blur, no thumb over the lens, no dark or empty shots.
-A bad photo becomes a concession and a hit on the station's scorecard — and POD is one of our weakest areas right now. *One clean photo protects you, the customer, and the route. Take the extra second.*`,
-      `🎯 *Right package. Right stop. Right scan. Every time.*
-Scan *every* package at *every* stop — no bulk-scanning ahead.
-Wrong scans and missed scans turn into delivery defects (CDF DPMO) — our biggest scorecard drag right now.
-Slow down for the scan — it's far faster than fixing a misdelivery. ✅`,
-      `📸 *Customer feedback (CDF) is our #1 scorecard miss — and it starts at the door.*
-The customer rates the delivery they SEE: package placed neatly, out of the rain, fully in your photo.
-A rushed or sloppy drop is what turns into a complaint. *Make the last 10 seconds count.*`,
-      `📍 *Deliver to the RIGHT spot — not just the right address.*
-Front door, not the driveway. Out of view from the street. Where THEY asked in the notes.
-Wrong-location drops drive customer complaints (CDF) straight onto our scorecard. *Read the note, place it right.*`,
-      `📸 *One clean photo = one less complaint.*
-Step back so the *package + door* are both in frame. Daylight on it, nothing blocking the lens.
-POD is one of our weakest metrics — and it's the easiest one to fix. *Take the extra second, every stop.*`,
-      `🛑 *Suspensions are automatic — Amazon, not us.*
-Netradyne tracks speeding, phone, following distance, seatbelt. ~5+ events in 10 trips = an occurrence: *1st = training, 2nd in 90 days = suspended, 3rd = permanent ban.* Serious events can *pause your route mid-day.*
-Once your record hits those numbers I can't undo it. Seatbelt on, phone down, slow down, keep your distance. *Protect your job.*`
+      `🚗 *Following distance.* Netradyne measures your gap in *seconds*, not feet — it tightens the faster you go. Keep at least 2 seconds, 3 in rain or loaded. Hear the beep? Ease off and rebuild the gap within 10 seconds and it won't count.`,
+      `🚛 *Speeding — nobody should be speeding, period.* The camera logs an event at just *5 mph over*, and the limit drops fast in neighborhoods. Way over = automatic severe event that can pause your route the same day. Stay at or under the limit and you never think about it.`,
+      `🛑 *Stop signs.* A rolling stop counts the same as blowing it — the camera needs a *full stop, wheels stopped*, before you move. Blowing one at 15+ mph is severe and can pause your route. Count "one-one-thousand" at every sign, even when it looks empty.`,
+      `🚦 *Red lights.* Running a red is one of the most serious things the system flags — a single one can pause your route, and it hits the scorecard 10x harder than a stop sign. Light turns yellow? Plan to stop. Don't beat it.`,
+      `📵 *Distraction / phone.* The inward camera watches your eyes. Looking down above 15 mph, or talking on it above 5 mph, triggers a Distracted Driving alert in seconds. Phone in the mount, nav set before you roll, eyes up and forward.`,
+      `🦺 *Seatbelt — on whenever the vehicle is moving, period.* Lap belt low on your hips, shoulder belt across your chest. Slipping it behind your back or over your head is flagged as *severe misuse* and pauses your route. Belt on, every leg, no exceptions.`,
+      `↩️ *Backing / reversing.* Avoid it — pull through or park so you drive out forward. Before you reverse, *walk behind the van and look*; a person can hide in the blind spot 20–40 ft. Don't trust the backup camera alone, and never back toward a driveway you didn't walk first.`,
+      `🔄 *Hard turns.* Taking a turn over 15 mph hard enough to trip the sensor logs a Hard Turn event and throws packages around the back. Slow into every turn — it protects the load AND your score.`,
+      `📍 *Delivery location.* Always follow the customer's delivery instructions. No instructions? Deliver to a secure spot — out of traffic, not visible from the street, out of the weather. Can't find one? Call the customer before you drop it.`,
+      `📦 *Don't group packages.* Several boxes at one address? Don't stack them all in one spot to save time — deliver per the customer's notes. Grouping is a *top* complaint driver.`,
+      `📸 *Good photo-on-delivery.* POD is scored on whether the photo is *usable*: clear, well-lit, package visible, taken at the actual drop spot so the customer can find it. Blurry or box-not-in-frame = fail. The photo is your proof it happened — make it count.`,
+      `🙅 *What NOT to photograph.* Never capture a person's face or the customer — Amazon rejects those for privacy. Shoot the *package at the door*, not the handoff.`,
+      `✅ *Right reason code.* "Delivered to Household Member" is ONLY for when you actually hand it to someone. Don't use it to clear a stop you left at the door.`,
+      `🎯 *Fix the pin before you scan.* If GPS drops you at the wrong house, correct the pin *before* you scan — the scan location is what gets scored, not where you stand. Ten seconds protects your CDF.`,
+      `🪜 *Three points of contact.* In or out of the van: two hands + a foot, or two feet + a hand. Face the cab coming down, grip the handrail first, free hand empty — don't climb down holding packages.`,
+      `🚷 *Never jump out of the van.* Climb down feet-first on the steps — never jump from the cab or the back. Jumping hits your knees, ankles, and back with up to *12x your body weight*, and you can't see the curb, ice, or debris below. That's what wrecks joints over a career.`,
+      `🏋️ *Lift with your legs.* Box close to your body, don't twist — pivot your feet. Keep heavy items between knee and shoulder height. Heavy or awkward = team lift or cart, every time.`,
+      `🐕 *Dog bites.* Stay alert at any address a dog might be, respect its territory. Dog comes at you? Don't run or turn your back — stand your ground and put something between you and it (bag, package). Never hand a package to a child or reach for a door with a loose dog nearby.`,
+      `🚸 *Stay out of blind zones on foot.* Stay clear of the area behind any reversing vehicle, and make eye contact with the driver before crossing behind them. People tune out backup alarms — don't count on them.`,
+      `🔧 *DVIC inspection.* Do the start-of-route AND end-of-route inspection fully and honestly every day. It documents pre-existing damage so it's not pinned on you, and a real defect is ours to fix before the van rolls. Some vans now need 6 photos (4 exterior, 2 interior).`,
+      `🔎 *Scan discipline.* Scan at the right place and time — the scan IS the record. Fix a wrong GPS pin before you scan, never pre-scan a stop you haven't made, and don't mass-scan to save time.`,
+      `📦 *Package handling.* Treat every box like it's breakable and like the customer is watching — with POD, they basically are. No throwing, no stacking heavy on light, fragile items face-up.`,
+      `🚨 *If you're in an accident.* Stop, make sure everyone's safe, *call me immediately.* Don't admit fault or negotiate. Document with photos, get the other party's info — we'll handle it.`,
+      `🛠️ *If the van breaks down.* Get safely off the road, hazards on, *call me.* Don't try to fix it roadside.`,
+      `⚠️ *Aggressive dog / unsafe address.* Don't force it. Aggressive dog → mark the stop, move on, tell me so we flag the address. Unsafe address → call the customer; still unsafe, mark it and move on. A package is *never* worth your safety.`,
+      `💧 *Hydrate before you're thirsty.* Drink water often all shift — don't wait until you feel it. Routes 2+ hours in the heat: add an electrolyte drink, not just water. Take cool-down breaks in shade or the A/C cab.`,
+      `🥵 *Heat exhaustion vs heat stroke.* Exhaustion = heavy sweating, dizziness, nausea, headache, weakness → cool spot, hydrate, rest. Heat STROKE = 911 emergency → confusion, slurred speech, passing out, seizures. Call 911, cool them with ice/cold water, never leave them alone.`,
+      `🌧️ *Wet / icy conditions.* Slow down and double your following distance — a loaded van stops slower than a car. Three points of contact matter even more on wet steps and curbs. Walkway iced over? Find a safer approach or skip the drop — a package isn't worth a fall.`,
+      `🛑 *How suspensions work — everyday events* (speeding, distraction, following distance, seatbelt, stop sign). @all Enough events = an occurrence. *1st occurrence = training* (you miss work that day). *2nd in 90 days = account suspended* + retrained. *3rd in 90 days = permanently banned* from delivering for Amazon. Done. The goal is ZERO.`,
+      `🛑 *How suspensions work — severe events* (red light, way-over speeding, stop sign at 15+, seatbelt misuse). @all Amazon reviews the video and a single validated one *pauses your route on the spot* — you park, stop delivering, call me. Repeats escalate to account shutoff and permanent ban. It's Amazon's automatic process, not mine — once your record hits those thresholds I can't undo it.`
     ];
 
     this.loadOrInitState();
