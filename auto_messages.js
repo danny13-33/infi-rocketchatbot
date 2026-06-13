@@ -80,8 +80,17 @@ Skip parking on driveways: if you can see the front door from the street, *don't
 A bad photo becomes a concession and a hit on the station's scorecard — and POD is one of our weakest areas right now. *One clean photo protects you, the customer, and the route. Take the extra second.*`,
       `🎯 *Right package. Right stop. Right scan. Every time.*
 Scan *every* package at *every* stop — no bulk-scanning ahead.
-Wrong scans and missed scans turn into delivery defects (CDF DPMO) on the scorecard, and that's another area we need to tighten up.
-Slow down for the scan — it's far faster than fixing a misdelivery. ✅`
+Wrong scans and missed scans turn into delivery defects (CDF DPMO) — our biggest scorecard drag right now.
+Slow down for the scan — it's far faster than fixing a misdelivery. ✅`,
+      `📸 *Customer feedback (CDF) is our #1 scorecard miss — and it starts at the door.*
+The customer rates the delivery they SEE: package placed neatly, out of the rain, fully in your photo.
+A rushed or sloppy drop is what turns into a complaint. *Make the last 10 seconds count.*`,
+      `📍 *Deliver to the RIGHT spot — not just the right address.*
+Front door, not the driveway. Out of view from the street. Where THEY asked in the notes.
+Wrong-location drops drive customer complaints (CDF) straight onto our scorecard. *Read the note, place it right.*`,
+      `📸 *One clean photo = one less complaint.*
+Step back so the *package + door* are both in frame. Daylight on it, nothing blocking the lens.
+POD is one of our weakest metrics — and it's the easiest one to fix. *Take the extra second, every stop.*`
     ];
 
     this.loadOrInitState();
