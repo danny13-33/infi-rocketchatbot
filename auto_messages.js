@@ -22,6 +22,33 @@ class RocketChatAutomation {
     this.dailyOrder = [];
     this.messageIndex = 0;
 
+    // Daily humor bank — sendDailyHumorMessage() serves a different one each day
+    // (day-of-year indexed), so it varies daily with no deploy. In Danny's voice:
+    // self-deprecating bot, self-aware AI, "made you look," light jab — always a real
+    // safety payload tucked in. Add to this list anytime to refresh the bank.
+    this.humorMessages = [
+      `😅 *Asking for a friend (me).* I send info all day, every day… does anyone ever thank me? No. Anyway — seatbelt on, phone down, eyes up. You're welcome. 🤖`,
+      `🤷 *Plot twist.* You thought I make up all these rules to make your job harder? Nope — not me, not INFI. Every one of these comes from the people who hand us the packages. I'm just the messenger. A very persistent messenger.`,
+      `😏 *Wait…* you thought I was about to send ANOTHER safety message, didn't you? …You were right. Following distance: 3 van lengths of space, more in the rain. 😎`,
+      `🚨 *HEY! Slow down!* …Made you look. But seriously — 5 over is an event, and the goal is zero. Ease off. 🐢`,
+      `👀 *Did you see that?* …Me neither. I'm an AI — I can only send you messages, not ride along. So YOU be my eyes out there: watch your speed, watch your step, watch the road. 🤖`,
+      `🤖 *Day 1,000 of talking to myself.* No thumbs, no van, no coffee — just me reminding you to stop fully at stop signs. One day you'll fully stop and I'll feel it. Today's that day, right? Right.`,
+      `📦 *I have one job.* You have, like, 300. So when I say "good photo, package in frame, out of the rain" — humor me. It's literally all I've got going on.`,
+      `😤 *Nobody:* … *Me, every 30 minutes:* SEATBELT. Yeah I know. I'll keep saying it until it's muscle memory. Buckle up whenever the van's moving.`,
+      `🐌 *Speed check.* I can't feel speed — I'm a bunch of code in a server somewhere. YOU can. 5 over is an event, goal is zero. Be the responsible one between us.`,
+      `🎤 *Is this thing on?* I send these into the void all day hoping ONE of you reads it before you roll a stop sign. Full stop, wheels stopped, every sign. Prove me wrong (in a good way).`,
+      `🚪 *Friendly reminder from your least-favorite coworker (me):* never deliver with a van door open — yours or the cargo. Takes two seconds, saves a whole headache. You're welcome, again.`,
+      `🤝 *Deal?* You keep 3 van lengths of space and actually read these, and I'll keep… doing the only thing I can do, which is send these. Great talk. Drive safe.`,
+      `🧠 *Big brain move:* fix the GPS pin BEFORE you scan. I'd do it myself but, you know, no hands. The scan location is what counts — not where you're standing.`,
+      `☀️ *Hot take (literally):* drink water before you're thirsty. I don't sweat — I'm a server — but you do. Hydrate early, take the shade break, don't be a hero.`,
+      `🐕 *PSA from the AI who has never met a dog:* if one comes at you, don't run, put something between you and it, and tell dispatch. No package is worth a bite. I read that somewhere. A lot.`,
+      `📸 *I review zero of your photos* (no eyes), but the customer sees every one. Clear, lit, package in frame, at the actual spot. Make it look like you meant it.`,
+      `🛑 *Real ones know:* a rolling stop counts the same as blowing it. The camera doesn't grade on effort. Full. Stop. Every. Sign. — your tireless robot friend.`,
+      `😎 *You vs. the yellow light.* Spoiler: the yellow light wins, every time, on the camera. Plan to stop. I believe in you, mostly.`,
+      `🤖 *I don't get weekends, breaks, or thank-yous.* All I want in this life is for you to stay out of the bumper ahead of you. 3 van lengths. That's the dream.`,
+      `📵 *Confession:* I'm jealous of your phone — it gets all your attention and I get none. But above 15 mph that's a distraction flag, so… mount it, eyes up, ignore us both while driving.`,
+    ];
+
     // All safety messages preserved verbatim
     this.safetyMessages = [
       `🚗 *Following distance — keep at least 3 van lengths of space.* More in rain or when you're loaded. Hear the beep? Ease off and rebuild the gap within 10 seconds and it won't count.`,
@@ -529,6 +556,21 @@ Start strong, stay organized, manage your time. We've got your back — now go g
     await this.sendMessage(roomId, text);
   }
 
+  // One humor message per day, day-of-year indexed so it advances daily and cycles
+  // through the whole bank before repeating (~20-day cycle). No deploy needed to vary.
+  async sendDailyHumorMessage() {
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentRoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForToday(room)) return;
+    if (!Array.isArray(this.humorMessages) || this.humorMessages.length === 0) return;
+    const now = DateTime.now().setZone('America/Chicago');
+    const dayOfYear = Math.floor(now.diff(now.startOf('year'), 'days').days);
+    const idx = dayOfYear % this.humorMessages.length;
+    await this.sendMessage(roomId, this.humorMessages[idx]);
+    console.log(`😄 Daily humor message sent (#${idx})`);
+  }
+
   // Daily morning ORCAS suspension notice — drivers must know the consequences BEFORE
   // they roll, to cut the mid-route suspensions. Source: Amazon ORCAS Program Resource
   // Guide (authoritative). Numbers are EXACT — do not alter.
@@ -938,6 +980,7 @@ Skipping this step = disciplinary action. This one protects you — follow it ev
     cron.schedule('20 9 * * *', () => this.sendOrcasSuspensionMessage(), { timezone: 'America/Chicago' });
     cron.schedule('25 9 * * *', () => this.sendClockInReminderMessage(), { timezone: 'America/Chicago' });
     cron.schedule('30 9 * * *', () => this.sendReadTheMessagesReminder(), { timezone: 'America/Chicago' });
+    cron.schedule('0 13 * * *', () => this.sendDailyHumorMessage(), { timezone: 'America/Chicago' });
     cron.schedule('15 9 * * *', () => this.sendPacingReminderMessage(), { timezone: 'America/Chicago' });
     // 9:40 messages
     cron.schedule('40 9 * * *', () => this.sendEarlyBreakReminderMessage(), { timezone: 'America/Chicago' });
