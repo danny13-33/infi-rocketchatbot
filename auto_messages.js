@@ -434,6 +434,17 @@ Start strong, stay organized, manage your time. We've got your back — now go g
     await this.sendMessage(roomId, text);
   }
 
+  // Daily "read the messages" nudge — pinned slot so the read-daily expectation lands
+  // every morning, not just when the rotation happens to surface it.
+  async sendReadTheMessagesReminder() {
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentRoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForToday(room)) return;
+    const text = `😏 *Real talk.* @all I don't send these messages out for my own health — my expectation is you *read these daily.* They're not just daily expectations… they may literally *save your life.* So do me a favor: actually read them. 📖`;
+    await this.sendMessage(roomId, text);
+  }
+
   // Daily morning ORCAS suspension notice — drivers must know the consequences BEFORE
   // they roll, to cut the mid-route suspensions. Source: Amazon ORCAS Program Resource
   // Guide (authoritative). Numbers are EXACT — do not alter.
@@ -842,6 +853,7 @@ Skipping this step = disciplinary action. This one protects you — follow it ev
     cron.schedule('0 9 * 5-9 *', () => this.sendHeatReminderMessage(), { timezone: 'America/Chicago' });
     cron.schedule('20 9 * * *', () => this.sendOrcasSuspensionMessage(), { timezone: 'America/Chicago' });
     cron.schedule('25 9 * * *', () => this.sendClockInReminderMessage(), { timezone: 'America/Chicago' });
+    cron.schedule('30 9 * * *', () => this.sendReadTheMessagesReminder(), { timezone: 'America/Chicago' });
     cron.schedule('15 9 * * *', () => this.sendPacingReminderMessage(), { timezone: 'America/Chicago' });
     // 9:40 messages
     cron.schedule('40 9 * * *', () => this.sendEarlyBreakReminderMessage(), { timezone: 'America/Chicago' });
