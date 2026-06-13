@@ -27,7 +27,7 @@ class RocketChatAutomation {
       `🚗 *Following distance.* Netradyne measures your gap in *seconds*, not feet — it tightens the faster you go. Keep at least 2 seconds, 3 in rain or loaded. Hear the beep? Ease off and rebuild the gap within 10 seconds and it won't count.`,
       `🚛 *Speeding — nobody should be speeding, period.* The camera logs an event at just *5 mph over*, and the limit drops fast in neighborhoods. Way over = automatic severe event that can pause your route the same day. Stay at or under the limit and you never think about it.`,
       `🛑 *Stop signs.* A rolling stop counts the same as blowing it — the camera needs a *full stop, wheels stopped*, before you move. Blowing one at 15+ mph is severe and can pause your route. Count "one-one-thousand" at every sign, even when it looks empty.`,
-      `🚦 *Red lights.* Running a red is one of the most serious things the system flags — a single one can pause your route, and it hits the scorecard 10x harder than a stop sign. Light turns yellow? Plan to stop. Don't beat it.`,
+      `🚦 *Red lights.* Running a red is one of the most serious things the camera flags — a single one can pause your route on the spot. When a light turns yellow, plan to stop. Don't try to beat it.`,
       `📵 *Distraction / phone.* The inward camera watches your eyes. Looking down above 15 mph, or talking on it above 5 mph, triggers a Distracted Driving alert in seconds. Phone in the mount, nav set before you roll, eyes up and forward.`,
       `🦺 *Seatbelt — on whenever the vehicle is moving, period.* Lap belt low on your hips, shoulder belt across your chest. Slipping it behind your back or over your head is flagged as *severe misuse* and pauses your route. Belt on, every leg, no exceptions.`,
       `↩️ *Backing / reversing.* Avoid it — pull through or park so you drive out forward. Before you reverse, *walk behind the van and look*; a person can hide in the blind spot 20–40 ft. Don't trust the backup camera alone, and never back toward a driveway you didn't walk first.`,
@@ -60,7 +60,27 @@ class RocketChatAutomation {
       `🤷 *Plot twist.* You thought I make up all these rules to make your job harder? Nope — not me, not INFI. Every one of these comes from the people who hand us the packages. I'm just the messenger. A very persistent messenger.`,
       `😏 *Wait…* you thought I was about to send ANOTHER safety message, didn't you? …You were right. Following distance: 2 seconds, 3 in the rain. 😎`,
       `🚨 *HEY! Slow down!* …Made you look. But seriously — 5 over is an event, and the goal is zero. Ease off. 🐢`,
-      `👀 *Did you see that?* …Me neither. I'm an AI — I can only send you messages, not ride along. So YOU be my eyes out there: watch your speed, watch your step, watch the road. 🤖`
+      `👀 *Did you see that?* …Me neither. I'm an AI — I can only send you messages, not ride along. So YOU be my eyes out there: watch your speed, watch your step, watch the road. 🤖`,
+      `🛑 *Sign/Signal — full stop, every stop sign.* A rolling stop counts the same as blowing it; the camera needs your wheels fully stopped before you move. Count "one-one-thousand" at every sign, even on an empty street.`,
+      `🛑 *Sign/Signal — stop behind the line.* Come to a complete stop at the line or crosswalk, not in the middle of the intersection. Creeping forward while you look both ways still counts.`,
+      `🚦 *Sign/Signal — yellow means stop.* When the light turns yellow, plan to stop — don't speed up to beat it. Running a red is one of the most serious things the camera flags and can pause your route on the spot.`,
+      `🔁 *Sign/Signal — no U-turns where it's posted.* Missed the address? Go around the block. A U-turn at a "No U-Turn" sign or a prohibited spot counts against you. Plan the loop, don't flip it.`,
+      `🅿️ *Sign/Signal — parking-lot stop signs count too.* Apartment complexes, plazas, and gated communities have stop signs the camera reads. Treat the lot like the road — full stop at every one.`,
+      `🚚 *Following distance — two seconds minimum, three when loaded.* The camera measures your gap in seconds, not feet, so it tightens the faster you go. After the car ahead passes a fixed point, count "one-one-thousand, two-one-thousand." Can't reach two? You're too close.`,
+      `🚚 *Following distance — heard the beep? Back off within 10 seconds.* Get the alert, ease off the gas and rebuild the gap. Fix it inside 10 seconds and it won't count against you. Ignore it and it logs.`,
+      `🌧️ *Following distance — double the gap in rain or traffic.* A loaded van stops slower than a car. Wet roads, fog, or stop-and-go — give yourself extra room.`,
+      `🚙 *Following distance — don't tailgate to make time.* Riding the bumper doesn't get you there faster; lights and stops reset everyone. Hang back and let the gap ride.`,
+      `📍 *Delivery feedback — secure spot beats fast spot.* No customer instructions? Put it out of street view, out of traffic, out of the weather. A box visible from the road is the #1 thing customers complain about.`,
+      `📝 *Delivery feedback — read the delivery notes every time.* Side door, back porch, gate code — follow it exactly. Ignoring a note counts against you even if the package is safe.`,
+      `📦 *Delivery feedback — don't pile boxes in one spot.* Several packages to one address still go to the spot the notes call for — don't stack them all at the front door to save 20 seconds.`,
+      `📞 *Delivery feedback — no safe spot? Call the customer.* Two minutes on the phone beats a complaint and a possible re-delivery.`,
+      `🎯 *Delivery feedback — fix the GPS pin before you scan.* If the app drops you at the wrong house, correct the pin first — the scan location is what's recorded, not where you stand.`,
+      `📸 *Photo on delivery — clear, lit, package in frame.* A good photo is clear, well-lit, and shows the package at the actual drop spot so the customer can find it. Blurry or box-not-in-frame doesn't count — and the photo is your proof you delivered it.`,
+      `🙅 *Photo on delivery — no faces, no people.* Don't photograph the customer or anyone's face — Amazon rejects those for privacy. Shoot the package at the door, not the handoff.`,
+      `📷 *Photo on delivery — back up for the shot.* Take a half-step back so the package and a bit of the doorway are both in frame. All box, no context doesn't help the customer find it.`,
+      `✅ *Delivery completion — scan it where you deliver it.* Never pre-scan a stop you haven't made or mass-scan to save time. Marking something delivered that the customer never got is the worst kind of miss.`,
+      `🔎 *Delivery completion — search the van before you mark a package missing.* Check the floor, under other parcels, and the cab first. A package that was actually in the van shouldn't be marked missing.`,
+      `🚐 *Delivery completion — every package gets delivered or properly returned.* Don't leave a deliverable package in the van. Genuinely can't deliver one? Follow the return process so it's accounted for — don't bring it back unscanned.`
     ];
 
     this.loadOrInitState();
