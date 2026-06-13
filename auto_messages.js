@@ -90,7 +90,10 @@ Front door, not the driveway. Out of view from the street. Where THEY asked in t
 Wrong-location drops drive customer complaints (CDF) straight onto our scorecard. *Read the note, place it right.*`,
       `📸 *One clean photo = one less complaint.*
 Step back so the *package + door* are both in frame. Daylight on it, nothing blocking the lens.
-POD is one of our weakest metrics — and it's the easiest one to fix. *Take the extra second, every stop.*`
+POD is one of our weakest metrics — and it's the easiest one to fix. *Take the extra second, every stop.*`,
+      `🛑 *Suspensions are automatic — Amazon, not us.*
+Netradyne tracks speeding, phone, following distance, seatbelt. ~5+ events in 10 trips = an occurrence: *1st = training, 2nd in 90 days = suspended, 3rd = permanent ban.* Serious events can *pause your route mid-day.*
+Once your record hits those numbers I can't undo it. Seatbelt on, phone down, slow down, keep your distance. *Protect your job.*`
     ];
 
     this.loadOrInitState();
@@ -466,6 +469,31 @@ Start strong, stay organized, manage your time. We've got your back — now go g
     if (!roomId || !this.isRoomForToday(room)) return;
     const text = `*Attention Titans*
 @all This is your daily reminder to clock-in. Please ensure you clock in and if you are unable to clock in make sure you edit your timecard in the ADP app. If you have an issue to see an onsite manager to help you. Thank you!`;
+    await this.sendMessage(roomId, text);
+  }
+
+  // Daily morning ORCAS suspension notice — drivers must know the consequences BEFORE
+  // they roll, to cut the mid-route suspensions. Source: Amazon ORCAS Program Resource
+  // Guide (authoritative). Numbers are EXACT — do not alter.
+  async sendOrcasSuspensionMessage() {
+    if (!this.authToken && !(await this.authenticate())) return;
+    const room = this.getCurrentRoomName();
+    const roomId = await this.checkRoomExists(room);
+    if (!roomId || !this.isRoomForToday(room)) return;
+    const text = `🛑 *Know this BEFORE you roll — it protects your job.* @all
+
+Amazon makes the suspension/deactivation call straight from your driving record + Netradyne video. INFI does *not* control that — which is why you have to protect yourself.
+
+*Speeding, phone/distraction, following too close, seatbelt off* (Netradyne tracks it; ~5+ events in 10 trips = an occurrence):
+• 1st: pulled for training — you miss work that day.
+• 2nd in 90 days: account *suspended* + retrained.
+• 3rd in 90 days: *permanently banned* from delivering for Amazon. Done.
+
+*Serious events — hard braking at speed, near-collision, major distraction:*
+• 1st: your *route is paused on the spot.* You park, stop delivering, call me.
+• 2nd: account shut off. • 3rd: permanent ban.
+
+This is Amazon's ORCAS process. Once your record hits those thresholds I have very little room to undo it. The goal is *ZERO.* Seatbelt on, phone down + mounted, slow down, keep your distance. Handle that and none of this ever touches you. — Danny`;
     await this.sendMessage(roomId, text);
   }
 
@@ -850,6 +878,7 @@ Skipping this step = disciplinary action. This one protects you — follow it ev
     cron.schedule('0,30 10-19 * * *', () => this.sendSafetyMessage(), { timezone: 'America/Chicago' });
     cron.schedule('0 10-18 * 5-9 *', () => this.sendHydrationMessage(), { timezone: 'America/Chicago' });
     cron.schedule('0 9 * 5-9 *', () => this.sendHeatReminderMessage(), { timezone: 'America/Chicago' });
+    cron.schedule('20 9 * * *', () => this.sendOrcasSuspensionMessage(), { timezone: 'America/Chicago' });
     cron.schedule('25 9 * * *', () => this.sendClockInReminderMessage(), { timezone: 'America/Chicago' });
     cron.schedule('15 9 * * *', () => this.sendPacingReminderMessage(), { timezone: 'America/Chicago' });
     // 9:40 messages
