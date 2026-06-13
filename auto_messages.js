@@ -24,7 +24,7 @@ class RocketChatAutomation {
 
     // All safety messages preserved verbatim
     this.safetyMessages = [
-      `🚗 *Following distance.* Netradyne measures your gap in *seconds*, not feet — it tightens the faster you go. Keep at least 2 seconds, 3 in rain or loaded. Hear the beep? Ease off and rebuild the gap within 10 seconds and it won't count.`,
+      `🚗 *Following distance — keep at least 3 van lengths of space.* More in rain or when you're loaded. Hear the beep? Ease off and rebuild the gap within 10 seconds and it won't count.`,
       `🚛 *Speeding — nobody should be speeding, period.* The camera logs an event at just *5 mph over*, and the limit drops fast in neighborhoods. Way over = automatic severe event that can pause your route the same day. Stay at or under the limit and you never think about it.`,
       `🛑 *Stop signs.* A rolling stop counts the same as blowing it — the camera needs a *full stop, wheels stopped*, before you move. Blowing one at 15+ mph is severe and can pause your route. Count "one-one-thousand" at every sign, even when it looks empty.`,
       `🚦 *Red lights.* Running a red is one of the most serious things the camera flags — a single one can pause your route on the spot. When a light turns yellow, plan to stop. Don't try to beat it.`,
@@ -58,7 +58,7 @@ class RocketChatAutomation {
       `😏 *Real talk.* @all I don't send these messages out for my own health — my expectation is you *read these daily.* They're not just daily expectations… they may literally *save your life.* So do me a favor: actually read them. 📖`,
       `😅 *Asking for a friend (me).* I send info all day, every day… does anyone ever thank me? No. Anyway — seatbelt on, phone down, eyes up. You're welcome. 🤖`,
       `🤷 *Plot twist.* You thought I make up all these rules to make your job harder? Nope — not me, not INFI. Every one of these comes from the people who hand us the packages. I'm just the messenger. A very persistent messenger.`,
-      `😏 *Wait…* you thought I was about to send ANOTHER safety message, didn't you? …You were right. Following distance: 2 seconds, 3 in the rain. 😎`,
+      `😏 *Wait…* you thought I was about to send ANOTHER safety message, didn't you? …You were right. Following distance: 3 van lengths of space, more in the rain. 😎`,
       `🚨 *HEY! Slow down!* …Made you look. But seriously — 5 over is an event, and the goal is zero. Ease off. 🐢`,
       `👀 *Did you see that?* …Me neither. I'm an AI — I can only send you messages, not ride along. So YOU be my eyes out there: watch your speed, watch your step, watch the road. 🤖`,
       `🛑 *Sign/Signal — full stop, every stop sign.* A rolling stop counts the same as blowing it; the camera needs your wheels fully stopped before you move. Count "one-one-thousand" at every sign, even on an empty street.`,
@@ -66,7 +66,7 @@ class RocketChatAutomation {
       `🚦 *Sign/Signal — yellow means stop.* When the light turns yellow, plan to stop — don't speed up to beat it. Running a red is one of the most serious things the camera flags and can pause your route on the spot.`,
       `🔁 *Sign/Signal — no U-turns where it's posted.* Missed the address? Go around the block. A U-turn at a "No U-Turn" sign or a prohibited spot counts against you. Plan the loop, don't flip it.`,
       `🅿️ *Sign/Signal — parking-lot stop signs count too.* Apartment complexes, plazas, and gated communities have stop signs the camera reads. Treat the lot like the road — full stop at every one.`,
-      `🚚 *Following distance — two seconds minimum, three when loaded.* The camera measures your gap in seconds, not feet, so it tightens the faster you go. After the car ahead passes a fixed point, count "one-one-thousand, two-one-thousand." Can't reach two? You're too close.`,
+      `🚚 *Following distance — 3 van lengths of space, minimum.* That's your cushion to stop a tall, loaded van safely. If you're closer than 3 van lengths to the car ahead, back off and let the gap ride. More space in rain or traffic.`,
       `🚚 *Following distance — heard the beep? Back off within 10 seconds.* Get the alert, ease off the gas and rebuild the gap. Fix it inside 10 seconds and it won't count against you. Ignore it and it logs.`,
       `🌧️ *Following distance — double the gap in rain or traffic.* A loaded van stops slower than a car. Wet roads, fog, or stop-and-go — give yourself extra room.`,
       `🚙 *Following distance — don't tailgate to make time.* Riding the bumper doesn't get you there faster; lights and stops reset everyone. Hang back and let the gap ride.`,
