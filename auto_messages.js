@@ -47,14 +47,14 @@ class RocketChatAutomation {
       `🔧 *DVIC inspection.* Do the start-of-route AND end-of-route inspection fully and honestly every day. It documents pre-existing damage so it's not pinned on you, and a real defect is ours to fix before the van rolls. Some vans now need 6 photos (4 exterior, 2 interior).`,
       `🔎 *Scan discipline.* Scan at the right place and time — the scan IS the record. Fix a wrong GPS pin before you scan, never pre-scan a stop you haven't made, and don't mass-scan to save time.`,
       `📦 *Package handling.* Treat every box like it's breakable and like the customer is watching — with POD, they basically are. No throwing, no stacking heavy on light, fragile items face-up.`,
-      `🚨 *If you're in an accident.* Stop, make sure everyone's safe, *call me immediately.* Don't admit fault or negotiate. Document with photos, get the other party's info — we'll handle it.`,
-      `🛠️ *If the van breaks down.* Get safely off the road, hazards on, *call me.* Don't try to fix it roadside.`,
+      `🚨 *If you're in an accident.* Stop, make sure everyone's safe, *reach out to dispatch immediately.* Don't admit fault or negotiate. Document with photos, get the other party's info — we'll handle it.`,
+      `🛠️ *If the van breaks down.* Get safely off the road, hazards on, *reach out to dispatch immediately.* Don't try to fix it roadside.`,
       `⚠️ *Aggressive dog / unsafe address.* Don't force it. Aggressive dog → mark the stop, move on, tell me so we flag the address. Unsafe address → call the customer; still unsafe, mark it and move on. A package is *never* worth your safety.`,
       `💧 *Hydrate before you're thirsty.* Drink water often all shift — don't wait until you feel it. Routes 2+ hours in the heat: add an electrolyte drink, not just water. Take cool-down breaks in shade or the A/C cab.`,
       `🥵 *Heat exhaustion vs heat stroke.* Exhaustion = heavy sweating, dizziness, nausea, headache, weakness → cool spot, hydrate, rest. Heat STROKE = 911 emergency → confusion, slurred speech, passing out, seizures. Call 911, cool them with ice/cold water, never leave them alone.`,
       `🌧️ *Wet / icy conditions.* Slow down and double your following distance — a loaded van stops slower than a car. Three points of contact matter even more on wet steps and curbs. Walkway iced over? Find a safer approach or skip the drop — a package isn't worth a fall.`,
       `🛑 *How suspensions work — everyday events* (speeding, distraction, following distance, seatbelt, stop sign). @all Enough events = an occurrence. *1st occurrence = training* (you miss work that day). *2nd in 90 days = account suspended* + retrained. *3rd in 90 days = permanently banned* from delivering for Amazon. Done. The goal is ZERO.`,
-      `🛑 *How suspensions work — severe events* (red light, way-over speeding, stop sign at 15+, seatbelt misuse). @all Amazon reviews the video and a single validated one *pauses your route on the spot* — you park, stop delivering, call me. Repeats escalate to account shutoff and permanent ban. It's Amazon's automatic process, not mine — once your record hits those thresholds I can't undo it.`
+      `🛑 *How suspensions work — severe events* (red light, way-over speeding, stop sign at 15+, seatbelt misuse). @all Amazon reviews the video and a single validated one *pauses your route on the spot* — you park, stop delivering, reach out to dispatch immediately. Repeats escalate to account shutoff and permanent ban. It's Amazon's automatic process, not mine — once your record hits those thresholds I can't undo it.`
     ];
 
     this.loadOrInitState();
@@ -451,7 +451,7 @@ Amazon makes the suspension/deactivation call straight from your driving record 
 • 3rd in 90 days: *permanently banned* from delivering for Amazon. Done.
 
 *Serious events — hard braking at speed, near-collision, major distraction:*
-• 1st: your *route is paused on the spot.* You park, stop delivering, call me.
+• 1st: your *route is paused on the spot.* You park, stop delivering, reach out to dispatch immediately.
 • 2nd: account shut off. • 3rd: permanent ban.
 
 This is Amazon's ORCAS process. Once your record hits those thresholds I have very little room to undo it. The goal is *ZERO.* Seatbelt on, phone down + mounted, slow down, keep your distance. Handle that and none of this ever touches you. — Danny`;
