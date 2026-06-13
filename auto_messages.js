@@ -293,6 +293,65 @@ class RocketChatAutomation {
     return name === this.getCurrentRoomName();
   }
   // Safety message rotation that never stalls mid-day
+  // ---- DAILY FOCUS (self-pivot) ------------------------------------------------
+  // Biases the safety rotation toward one metric for the day. Two inputs, priority order:
+  //   1. Manual override: focus.json { "metric": "speeding", "until": "2026-06-14" } (optional 'until' = date it expires)
+  //   2. Auto: weakest metric from the latest scorecard file, if present.
+  // Returns a lowercase metric key or null. Never throws.
+  // It only BIASES (~40% of picks) — the ORCAS/safety/humor baseline still flows the rest of the time.
+  getDailyFocus() {
+    // 1. manual override
+    try {
+      const fp = path.join(__dirname, 'focus.json');
+      if (fs.existsSync(fp)) {
+        const f = JSON.parse(fs.readFileSync(fp, 'utf8'));
+        if (f && f.metric) {
+          if (!f.until || new Date(f.until) >= new Date(new Date().toISOString().slice(0,10))) {
+            return String(f.metric).toLowerCase();
+          }
+        }
+      }
+    } catch (e) { console.log('focus.json read skipped:', e.message); }
+    // 2. auto from scorecard (optional file the scraper can drop; absent = no auto focus)
+    try {
+      const sp = path.join(__dirname, 'scorecard-latest.json');
+      if (fs.existsSync(sp)) {
+        const sc = JSON.parse(fs.readFileSync(sp, 'utf8'));
+        if (sc && sc.weakestMetric) return String(sc.weakestMetric).toLowerCase();
+      }
+    } catch (e) { console.log('scorecard read skipped:', e.message); }
+    return null;
+  }
+
+  // Which metric a message is about, by keyword (used for focus biasing).
+  metricOf(msg) {
+    const m = msg.toLowerCase();
+    if (m.includes('following distance')) return 'following distance';
+    if (m.includes('sign/signal') || m.includes('stop sign') || m.includes('red light') || m.includes('u-turn')) return 'sign/signal';
+    if (m.includes('speeding') || m.includes('slow down')) return 'speeding';
+    if (m.includes('seatbelt')) return 'seatbelt';
+    if (m.includes('distraction') || m.includes('phone')) return 'distraction';
+    if (m.includes('delivery feedback') || m.includes('cdf')) return 'cdf';
+    if (m.includes('photo on delivery') || m.includes('pod')) return 'pod';
+    if (m.includes('delivery completion') || m.includes('dcr')) return 'dcr';
+    return null;
+  }
+
+  // Given a normally-chosen index, maybe swap it for a focus-matching message.
+  applyFocus(chosenIdx) {
+    const focus = this.getDailyFocus();
+    if (!focus) return chosenIdx;
+    // ~40% of the time, bias toward the focus metric (don't crowd out the baseline)
+    if (Math.random() > 0.4) return chosenIdx;
+    const matches = this.safetyMessages
+      .map((msg, i) => ({ i, metric: this.metricOf(msg) }))
+      .filter(x => x.metric === focus);
+    if (matches.length === 0) return chosenIdx;
+    const pick = matches[Math.floor(Math.random() * matches.length)].i;
+    console.log(`🎯 Daily focus "${focus}" — biasing to message #${pick}`);
+    return pick;
+  }
+
   async sendSafetyMessage() {
     if (!this.isBusinessHours()) {
       console.log('⏰ Not business hours, skipping safety message');
@@ -345,7 +404,7 @@ class RocketChatAutomation {
       this.saveState();
     }
 
-    const idx = this.dailyOrder[this.messageIndex];
+    const idx = this.applyFocus(this.dailyOrder[this.messageIndex]);
     const msg = this.safetyMessages[idx];
     this.messageIndex++;
     this.state.index = this.messageIndex;
@@ -413,7 +472,7 @@ class RocketChatAutomation {
       this.saveState();
     }
 
-    const idx = this.dailyOrder[this.messageIndex];
+    const idx = this.applyFocus(this.dailyOrder[this.messageIndex]);
     const msg = this.safetyMessages[idx];
     this.messageIndex++;
     this.state.index = this.messageIndex;
