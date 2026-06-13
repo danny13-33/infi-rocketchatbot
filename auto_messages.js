@@ -55,7 +55,12 @@ class RocketChatAutomation {
       `🌧️ *Wet / icy conditions.* Slow down and double your following distance — a loaded van stops slower than a car. Three points of contact matter even more on wet steps and curbs. Walkway iced over? Find a safer approach or skip the drop — a package isn't worth a fall.`,
       `🛑 *How suspensions work — everyday events* (speeding, distraction, following distance, seatbelt, stop sign). @all Enough events = an occurrence. *1st occurrence = training* (you miss work that day). *2nd in 90 days = account suspended* + retrained. *3rd in 90 days = permanently banned* from delivering for Amazon. Done. The goal is ZERO.`,
       `🛑 *How suspensions work — severe events* (red light, way-over speeding, stop sign at 15+, seatbelt misuse). @all Amazon reviews the video and a single validated one *pauses your route on the spot* — you park, stop delivering, reach out to dispatch immediately. Repeats escalate to account shutoff and permanent ban. It's Amazon's automatic process, not mine — once your record hits those thresholds I can't undo it.`,
-      `😏 *Real talk.* @all I don't send these messages out for my own health — my expectation is you *read these daily.* They're not just daily expectations… they may literally *save your life.* So do me a favor: actually read them. 📖`
+      `😏 *Real talk.* @all I don't send these messages out for my own health — my expectation is you *read these daily.* They're not just daily expectations… they may literally *save your life.* So do me a favor: actually read them. 📖`,
+      `😅 *Asking for a friend (me).* I send info all day, every day… does anyone ever thank me? No. Anyway — seatbelt on, phone down, eyes up. You're welcome. 🤖`,
+      `🤷 *Plot twist.* You thought I make up all these rules to make your job harder? Nope — not me, not INFI. Every one of these comes from the people who hand us the packages. I'm just the messenger. A very persistent messenger.`,
+      `😏 *Wait…* you thought I was about to send ANOTHER safety message, didn't you? …You were right. Following distance: 2 seconds, 3 in the rain. 😎`,
+      `🚨 *HEY! Slow down!* …Made you look. But seriously — 5 over is an event, and the goal is zero. Ease off. 🐢`,
+      `👀 *Did you see that?* …Me neither. I'm an AI — I can only send you messages, not ride along. So YOU be my eyes out there: watch your speed, watch your step, watch the road. 🤖`
     ];
 
     this.loadOrInitState();
