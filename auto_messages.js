@@ -753,7 +753,17 @@ You have 3 hours and 0 minutes left in your delivery day. Let’s finish strong!
     const room = this.getCurrentRoomName();
     const roomId = await this.checkRoomExists(room);
     if (!roomId || !this.isRoomForToday(room)) return;
-    const msg = `@all *Attention Titans!* Last hour remaining! 💥 Let's push through and complete the delivery day safely! 💪`;
+    // Option B (merged, 2026-07): acknowledge the finish AND redirect to a safe drive back — the
+    // empty-van return trip (5:30–6:30) is where our speeding clusters, so the old "push through!"
+    // urgency was working against us. Rotates by day-of-year so it doesn't become wallpaper.
+    const variants = [
+      `@all 🏁 *Last stretch, Titans — finish strong.* But the drive back is where we speed. Ease off, keep your distance, and park it clean. Almost done.`,
+      `@all 💪 *Home stretch — bring it in.* Finish the day the way you ran it, but the empty van still speeds and the cameras are still rolling. Slow it down on the way back and get home clean.`,
+      `@all ⏱️ *Last hour — let's bring it home.* This is where the speeding shows up: rushing the van back to clock out. It's not worth an event. Ease off the gas, leave room in front of you, finish clean.`,
+      `@all 🚐 *Almost done — good work out there today.* The ride back is where most of our speeding happens. Empty van, foot gets heavy, I get it — but the cameras don't clock out when you do. Slow down and keep your distance.`,
+      `@all 🎯 *You ran a good day — don't give it back on the drive in.* Finish strong, ease off the gas, leave a gap, and park it clean. That's how the numbers stay where they need to be.`,
+    ];
+    const msg = variants[DateTime.now().setZone('America/Chicago').ordinal % variants.length];
     await this.sendMessage(roomId, msg);
   }
 
