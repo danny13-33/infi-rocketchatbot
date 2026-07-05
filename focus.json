@@ -1,5 +1,5 @@
 {
-  "_comment": "Daily focus override. Set 'metric' to bias the safety rotation toward it (~40% of sends). Valid: speeding | sign/signal | following distance | seatbelt | distraction | cdf | pod | dcr. Optional 'until' = YYYY-MM-DD it expires (omit = until you change it). Leave metric empty/blank to turn focus off.",
-  "metric": "cdf",
+  "_comment": "Daily focus override. Set 'metric' to bias the safety rotation toward it (~40% of sends). Comma-separate for MULTIPLE (the 40% splits across them), e.g. 'cdf, speeding'. Valid: speeding | sign/signal | following distance | seatbelt | distraction | cdf | pod | dcr. Optional 'until' = YYYY-MM-DD it expires (omit = until you change it). Leave metric empty/blank to turn focus off.",
+  "metric": "cdf, speeding",
   "until": ""
 }

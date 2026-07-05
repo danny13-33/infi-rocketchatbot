@@ -324,7 +324,8 @@ class RocketChatAutomation {
   // Biases the safety rotation toward one metric for the day. Two inputs, priority order:
   //   1. Manual override: focus.json { "metric": "speeding", "until": "2026-06-14" } (optional 'until' = date it expires)
   //   2. Auto: weakest metric from the latest scorecard file, if present.
-  // Returns a lowercase metric key or null. Never throws.
+  // Returns an ARRAY of lowercase metric keys (may be empty). Supports one OR several focus
+  // metrics (focus.json "metric" can be comma-separated, e.g. "cdf, speeding").
   // It only BIASES (~40% of picks) — the ORCAS/safety/humor baseline still flows the rest of the time.
   getDailyFocus() {
     // 1. manual override
@@ -334,7 +335,7 @@ class RocketChatAutomation {
         const f = JSON.parse(fs.readFileSync(fp, 'utf8'));
         if (f && f.metric) {
           if (!f.until || new Date(f.until) >= new Date(new Date().toISOString().slice(0,10))) {
-            return String(f.metric).toLowerCase();
+            return String(f.metric).toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
           }
         }
       }
@@ -344,10 +345,10 @@ class RocketChatAutomation {
       const sp = path.join(__dirname, 'scorecard-latest.json');
       if (fs.existsSync(sp)) {
         const sc = JSON.parse(fs.readFileSync(sp, 'utf8'));
-        if (sc && sc.weakestMetric) return String(sc.weakestMetric).toLowerCase();
+        if (sc && sc.weakestMetric) return [String(sc.weakestMetric).toLowerCase()];
       }
     } catch (e) { console.log('scorecard read skipped:', e.message); }
-    return null;
+    return [];
   }
 
   // Which metric a message is about, by keyword (used for focus biasing).
@@ -367,15 +368,16 @@ class RocketChatAutomation {
   // Given a normally-chosen index, maybe swap it for a focus-matching message.
   applyFocus(chosenIdx) {
     const focus = this.getDailyFocus();
-    if (!focus) return chosenIdx;
-    // ~40% of the time, bias toward the focus metric (don't crowd out the baseline)
+    if (!focus.length) return chosenIdx;
+    // ~40% of the time, bias toward a focus metric (don't crowd out the baseline). With multiple
+    // focus metrics, the 40% is split across all of them (matches from any focus metric).
     if (Math.random() > 0.4) return chosenIdx;
     const matches = this.safetyMessages
       .map((msg, i) => ({ i, metric: this.metricOf(msg) }))
-      .filter(x => x.metric === focus);
+      .filter(x => x.metric && focus.includes(x.metric));
     if (matches.length === 0) return chosenIdx;
     const pick = matches[Math.floor(Math.random() * matches.length)].i;
-    console.log(`🎯 Daily focus "${focus}" — biasing to message #${pick}`);
+    console.log(`🎯 Daily focus [${focus.join(', ')}] — biasing to message #${pick}`);
     return pick;
   }
 
